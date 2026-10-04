@@ -567,8 +567,8 @@ html[data-doom] #page-root {
 
 .huff {
   position: absolute;
-  left: -6%;
-  top: -30%;
+  left: 0;
+  top: 2%;
   padding: 0.25em 0.6em;
   font-family: var(--f-pixel), monospace;
   font-size: clamp(0.6rem, 1.3vw, 0.9rem);
