@@ -107,9 +107,15 @@ export type Content = {
     pokeLabel: string;
     modal: string;
     close: string;
+    warn: string;
+    warnClose: string;
     toastTitle: string;
-    toastText: string;
-    toastAgain: string;
+    toastWake: string;
+    toastWarn: string;
+    toastForgiven: string;
+    bye: string;
+    countdown: string;
+    apologize: string;
   };
   footer: string;
 };

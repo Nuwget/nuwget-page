@@ -27,6 +27,7 @@ export const SCENE = {
     duduSmall: "/images/sprites/dudu-sm.webp",
     bubu: "/images/sprites/bubu.webp",
     bubuSmall: "/images/sprites/bubu-sm.webp",
+    bubuAngry: "/images/sprites/bubu-angry.webp",
     eyeLeft: "/images/sprites/eyelid-left.webp",
     eyeRight: "/images/sprites/eyelid-right.webp",
   },

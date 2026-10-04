@@ -1,4 +1,5 @@
 import { SCENE, place } from "@/lib/scene";
+import { DuduAngry } from "./AngryMarks";
 import { Sprite } from "./Sprite";
 
 const { sprites, src } = SCENE;
@@ -23,6 +24,7 @@ export function Dudu({ wrapRef }: { wrapRef: React.Ref<HTMLDivElement> }) {
           className="anim-blink"
           style={place(sprites.eyeRight, sprites.dudu)}
         />
+        <DuduAngry viewBox="312 192 640 651" />
       </div>
     </div>
   );

@@ -176,3 +176,76 @@ const pct = ({ left, top, width, height }) => ({
   h: +((height / H) * 100).toFixed(3),
 });
 console.log(JSON.stringify(Object.fromEntries(Object.entries(boxes).map(([k, v]) => [k, pct(v)])), null, 2));
+
+// ---------------------------------------------------------------------------
+// Angry Bubu: fur patches over her sleeping eyes and mouth, then angry eyes,
+// brows, a pout and puffed cheeks drawn on top. Same box as the bubu sprite.
+// ---------------------------------------------------------------------------
+{
+  const L = Math.floor(px(BUBU.cx - BUBU.rx, W));
+  const T = Math.floor(px(BUBU.cy - BUBU.ry, H));
+  const BW = Math.ceil(px(BUBU.cx + BUBU.rx, W)) - L;
+  const BH = Math.ceil(px(BUBU.cy + BUBU.ry, H)) - T;
+  const { data: src } = await sharp(SRC)
+    .extract({ left: L, top: T, width: BW, height: BH })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const out = Buffer.alloc(BW * BH * 4); // transparent
+
+  // Sleeping eyes and mouth, in sprite pixels. dy: where to borrow fur from.
+  const patches = [
+    { cx: 79, cy: 94, rx: 19, ry: 16, dy: 26 },
+    { cx: 138, cy: 118, rx: 19, ry: 16, dy: 28 },
+    { cx: 102, cy: 111, rx: 13, ry: 8, dy: 22 },
+  ];
+  for (const pt of patches) {
+    // colour-match to the fur around the patch
+    const ring = [[], [], []];
+    const core = [[], [], []];
+    for (let y = 0; y < BH; y++) {
+      for (let x = 0; x < BW; x++) {
+        const d = Math.hypot((x - pt.cx) / pt.rx, (y - pt.cy) / pt.ry);
+        const sy = y - pt.dy;
+        if (d >= 1.2 && d <= 1.6) for (let c = 0; c < 3; c++) ring[c].push(src[(y * BW + x) * 4 + c]);
+        if (d < 0.6 && sy >= 0) for (let c = 0; c < 3; c++) core[c].push(src[(sy * BW + x) * 4 + c]);
+      }
+    }
+    const med = (a) => a.sort((m, n) => m - n)[Math.floor(a.length / 2)];
+    const gain = [0, 1, 2].map((c) => med(ring[c]) / Math.max(1, med(core[c])));
+    for (let y = 0; y < BH; y++) {
+      for (let x = 0; x < BW; x++) {
+        const d = Math.hypot((x - pt.cx) / pt.rx, (y - pt.cy) / pt.ry);
+        const a = falloff(d, 0.72);
+        const sy = y - pt.dy;
+        if (a <= 0 || sy < 0) continue;
+        const i = (y * BW + x) * 4;
+        if (a * 255 > out[i + 3]) {
+          for (let c = 0; c < 3; c++) out[i + c] = Math.min(255, Math.round(src[(sy * BW + x) * 4 + c] * gain[c]));
+          out[i + 3] = Math.round(a * 255);
+        }
+      }
+    }
+  }
+
+  const ink = "#2b1730";
+  const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${BW}" height="${BH}">
+    <defs><radialGradient id="ck"><stop offset="0" stop-color="#ff8fa8" stop-opacity=".8"/><stop offset=".7" stop-color="#ff8fa8" stop-opacity=".45"/><stop offset="1" stop-color="#ff8fa8" stop-opacity="0"/></radialGradient></defs>
+    <ellipse cx="61" cy="102" rx="21" ry="17" fill="url(#ck)" transform="rotate(22 61 102)"/>
+    <ellipse cx="146" cy="139" rx="23" ry="18" fill="url(#ck)" transform="rotate(22 146 139)"/>
+    <g transform="translate(108.5 106) rotate(22.2)" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="-30.9" cy="0" rx="7.4" ry="9" fill="${ink}"/>
+      <circle cx="-32.8" cy="-3.2" r="2.6" fill="#fff"/><circle cx="-28.6" cy="3.4" r="1.2" fill="#fff" opacity=".8"/>
+      <ellipse cx="30.9" cy="0" rx="7.4" ry="9" fill="${ink}"/>
+      <circle cx="29" cy="-3.2" r="2.6" fill="#fff"/><circle cx="33.2" cy="3.4" r="1.2" fill="#fff" opacity=".8"/>
+      <path d="M-47 -15 L-19 -9.5" stroke="${ink}" stroke-width="4.6" fill="none"/>
+      <path d="M19 -8 L45 -30" stroke="${ink}" stroke-width="4.6" fill="none"/>
+      <path d="M-9.6 9.6 Q-4.1 3.4 1.4 9.6" stroke="${ink}" stroke-width="3" fill="none"/>
+    </g>
+  </svg>`);
+  const info = await sharp(out, { raw: { width: BW, height: BH, channels: 4 } })
+    .composite([{ input: svg, blend: "over" }])
+    .webp({ quality: 92, alphaQuality: 100 })
+    .toFile(`${OUT}/bubu-angry.webp`);
+  console.log("bubu-angry", info.width, "x", info.height, Math.round(info.size / 1024) + "KB");
+}

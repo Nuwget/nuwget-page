@@ -1,4 +1,5 @@
 import type { Content } from "@/content/types";
+import { BubuAngry } from "./AngryMarks";
 import { PokeBubu } from "./BubuEgg";
 import { Crop } from "./Crop";
 import { Reveal, Stagger, StaggerItem } from "./Reveal";
@@ -18,6 +19,7 @@ export function About({ c }: { c: Content }) {
             label="Bubu"
             className="shadow-[0_30px_80px_-30px_rgb(139_109_240/0.6)]"
           >
+            <BubuAngry parent={{ x: 68, y: 34, w: 28, h: 32 }} />
             <PokeBubu
               label={c.easter.pokeLabel}
               style={{ left: "46.8%", top: "23.4%", width: "38.6%", height: "36.3%" }}
@@ -30,10 +32,18 @@ export function About({ c }: { c: Content }) {
         </Reveal>
 
         <div>
-          <Stagger className="space-y-6 text-lg leading-relaxed text-muted" step={0.09}>
+          <Stagger className="space-y-6" step={0.09}>
             {about.paragraphs.map((p, i) => (
               <StaggerItem key={i}>
-                <p className={i === 0 ? "text-xl text-ink sm:text-2xl" : undefined}>{p}</p>
+                <p
+                  className={
+                    i === 0
+                      ? "font-display text-3xl leading-[1.15] tracking-[-0.01em] text-ink sm:text-[2.6rem]"
+                      : "max-w-[62ch] text-[1.0625rem] leading-[1.8] text-muted"
+                  }
+                >
+                  {p}
+                </p>
               </StaggerItem>
             ))}
           </Stagger>
