@@ -19,11 +19,11 @@ export function Experience({ c }: { c: Content }) {
 
   return (
     <Section id="experiencia" index="04" title={experience.title}>
-      <div ref={ref} className="relative pl-6 sm:pl-12">
-        <div aria-hidden="true" className="absolute bottom-0 left-[3px] top-2 w-px bg-line sm:left-[11px]" />
+      <div ref={ref} className="relative sm:pl-12">
+        <div aria-hidden="true" className="absolute bottom-0 left-[3px] top-2 hidden w-px bg-line sm:left-[11px] sm:block" />
         <motion.div
           aria-hidden="true"
-          className="absolute bottom-0 left-[3px] top-2 w-px origin-top bg-gradient-to-b from-lavender via-violet to-magenta sm:left-[11px]"
+          className="absolute bottom-0 left-[3px] top-2 hidden w-px origin-top sm:block bg-gradient-to-b from-lavender via-violet to-magenta sm:left-[11px]"
           style={{ scaleY: reduce ? 1 : line }}
         />
 
@@ -32,13 +32,13 @@ export function Experience({ c }: { c: Content }) {
             <Reveal key={role.company} className="relative">
               <span
                 aria-hidden="true"
-                className="absolute -left-[26px] top-2 h-2.5 w-2.5 rounded-full bg-lavender shadow-[0_0_16px_4px_rgb(139_109_240/0.8)] sm:-left-[54px] sm:h-3 sm:w-3"
+                className="absolute -left-[26px] top-2 hidden h-2.5 w-2.5 rounded-full sm:block bg-lavender shadow-[0_0_16px_4px_rgb(139_109_240/0.8)] sm:-left-[54px] sm:h-3 sm:w-3"
               />
-              <div className="panel !p-6 sm:!p-8">
+              <div className="panel !p-5 sm:!p-8">
               <p className="eyebrow">
                 {role.type} · {role.period}
               </p>
-              <h3 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">{role.title}</h3>
+              <h3 className="mt-3 font-display text-3xl leading-tight sm:text-5xl">{role.title}</h3>
               <p className="mt-2 text-lg text-lavender">
                 {role.company} <span className="text-faint">· {role.place}</span>
               </p>
@@ -50,7 +50,7 @@ export function Experience({ c }: { c: Content }) {
               <Stagger as="ul" step={0.05} className="mt-6 grid max-w-5xl gap-3 lg:grid-cols-2 lg:gap-x-10">
                 {role.bullets.map((b) => (
                   <StaggerItem as="li" key={b}>
-                    <div className="flex gap-3 text-[0.97rem] leading-[1.7] text-muted">
+                    <div className="flex gap-3 text-[0.92rem] leading-[1.6] text-muted sm:text-[0.97rem] sm:leading-[1.7]">
                       <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 bg-violet" />
                       <span>{b}</span>
                     </div>

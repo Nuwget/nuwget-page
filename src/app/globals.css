@@ -162,9 +162,22 @@ body {
 /* Portrait: frame Dudu's face in the upper part of the screen, clear of the type. */
 @media (max-aspect-ratio: 4/5) {
   .scene {
-    --w: max(100vw, calc(100svh * 1.77));
-    top: -21svh;
+    /* wide enough that Dudu's whole head fits, anchored under the nav */
+    --w: min(max(100vw, 240vw), calc(100svh * 1.77));
+    top: 5svh;
     transform: none;
+  }
+}
+
+/* Portrait: the scene ends above the bottom edge, so melt that edge into the page. */
+.hero-seam {
+  display: none;
+}
+@media (max-aspect-ratio: 4/5) {
+  .hero-seam {
+    display: block;
+    height: 34%;
+    background: linear-gradient(to top, #06051a 0%, #06051a 55%, rgb(6 5 26 / 0.6) 80%, transparent);
   }
 }
 

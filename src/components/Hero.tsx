@@ -203,9 +203,11 @@ export function Hero({ c }: { c: Content }) {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, #06051a 0%, rgb(6 5 26 / 0.84) 14%, rgb(6 5 26 / 0.5) 27%, rgb(6 5 26 / 0.1) 42%, transparent 54%), linear-gradient(to bottom, rgb(6 5 26 / 0.65), transparent 18%)",
+              "linear-gradient(to top, #06051a 0%, rgb(6 5 26 / 0.84) 14%, rgb(6 5 26 / 0.5) 27%, rgb(6 5 26 / 0.1) 42%, transparent 54%), linear-gradient(to bottom, rgb(6 5 26 / 0.95), rgb(6 5 26 / 0.5) 8%, transparent 19%)",
           }}
         />
+
+        <div aria-hidden="true" className="hero-seam pointer-events-none absolute inset-x-0 bottom-0" />
 
         {/* opening: the room lights up (opacity only) */}
         {!reduce && (
@@ -280,7 +282,7 @@ export function Hero({ c }: { c: Content }) {
         </div>
 
         <motion.ul
-          className="mt-5 flex flex-wrap gap-x-6 gap-y-1 border-t border-transparent pt-3 font-pixel text-[0.66rem] uppercase tracking-[0.2em] text-faint sm:mt-6 sm:text-[0.7rem]"
+          className="mt-5 flex flex-wrap gap-x-5 gap-y-1 border-t border-transparent pt-3 font-pixel text-[0.6rem] uppercase tracking-[0.1em] text-faint sm:mt-6 sm:text-[0.7rem] sm:tracking-[0.2em]"
           style={{ borderImage: "linear-gradient(90deg, rgb(201 184 255 / 0.4), transparent 70%) 1" }}
           {...fade(1)}
         >

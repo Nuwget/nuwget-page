@@ -54,14 +54,11 @@ export function Skills({ c }: { c: Content }) {
       <Reveal className="mt-20">
         <h3 className="mb-6 font-display text-4xl leading-none sm:text-5xl">{services.title}</h3>
         <div className="panel !p-0">
-          <ul className="grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+          <ul className="-mb-px -mr-px grid grid-cols-2 overflow-hidden lg:grid-cols-4">
             {services.items.map((item, i) => (
-              <li
-                key={item}
-                className="flex flex-col gap-3 border-line px-5 py-5 sm:border-b sm:px-6 lg:[&:nth-child(4n+1)]:border-l-0 lg:border-l"
-              >
+              <li key={item} className="flex flex-col gap-2 border-b border-r border-line px-4 py-4 sm:gap-3 sm:px-6 sm:py-5">
                 <span className="panel-label">{String(i + 1).padStart(2, "0")}</span>
-                <p className="text-[1.02rem] font-medium leading-snug text-ink">{item}</p>
+                <p className="text-[0.95rem] font-medium leading-snug text-ink sm:text-[1.02rem]">{item}</p>
               </li>
             ))}
           </ul>
