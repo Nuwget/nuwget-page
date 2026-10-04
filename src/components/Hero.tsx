@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import type { Content } from "@/content/types";
 import { asset } from "@/lib/asset";
-import { SCENE } from "@/lib/scene";
+import { SCENE, place } from "@/lib/scene";
 import { Bubu } from "./Bubu";
+import { PokeBubu } from "./BubuEgg";
 import { Dudu } from "./Dudu";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -121,6 +122,7 @@ export function Hero({ c }: { c: Content }) {
           />
           <Bubu wrapRef={bubuRef} />
           <Dudu wrapRef={duduRef} />
+          <PokeBubu label={c.easter.pokeLabel} style={place(SCENE.sprites.bubuHead)} />
 
           {/* light: plain alpha gradients, opacity-only animation */}
           <div className="absolute inset-0" aria-hidden="true">

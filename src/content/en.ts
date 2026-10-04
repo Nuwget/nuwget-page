@@ -321,6 +321,14 @@ export const en: Content = {
     ],
   },
   contact: { ...pt.contact, title: "Contact" },
+  easter: {
+    pokeLabel: "Bubu sleeping",
+    modal: "OOOO FAMILY, I'M TELLING DUDU, ARE YOU CRAZY?",
+    close: "My bad, Bubu",
+    toastTitle: "Achievement unlocked",
+    toastText: "Woke up Bubu",
+    toastAgain: "You had already woken up Bubu",
+  },
   footer:
     "Dudu on the code, Bubu on the sofa. The night is long and the coffee is still warm.",
 };

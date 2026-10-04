@@ -9,6 +9,7 @@ export function Crop({
   h,
   label,
   className = "",
+  children,
 }: {
   x: number;
   y: number;
@@ -16,13 +17,14 @@ export function Crop({
   h: number;
   label: string;
   className?: string;
+  children?: React.ReactNode;
 }) {
   const ratio = (w * SCENE.width) / (h * SCENE.height);
   return (
     <div
       role="img"
       aria-label={label}
-      className={`pixelated overflow-hidden rounded-[var(--radius)] border border-line ${className}`}
+      className={`pixelated relative overflow-hidden rounded-[var(--radius)] border border-line ${className}`}
       style={{
         aspectRatio: ratio,
         backgroundImage: `url(${asset(SCENE.src.full)})`,
@@ -30,6 +32,8 @@ export function Crop({
         backgroundPosition: `${(x / (100 - w)) * 100}% ${(y / (100 - h)) * 100}%`,
         backgroundRepeat: "no-repeat",
       }}
-    />
+    >
+      {children}
+    </div>
   );
 }

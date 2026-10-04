@@ -9,6 +9,8 @@ export const SCENE = {
   sprites: {
     dudu: { x: 19.5, y: 17.994, w: 40, h: 61.012 } satisfies Box,
     bubu: { x: 78, y: 39.925, w: 16, h: 20.15 } satisfies Box,
+    // Tap target over Bubu's head and nose (easter egg).
+    bubuHead: { x: 81.1, y: 41.5, w: 10.8, h: 11.6 } satisfies Box,
     eyeLeft: { x: 25.5, y: 44.611, w: 5.375, h: 11.153 } satisfies Box,
     eyeRight: { x: 37.063, y: 45.08, w: 6.75, h: 12.371 } satisfies Box,
   },

@@ -103,5 +103,13 @@ export type Content = {
     title: string;
     links: { label: string; href: string }[];
   };
+  easter: {
+    pokeLabel: string;
+    modal: string;
+    close: string;
+    toastTitle: string;
+    toastText: string;
+    toastAgain: string;
+  };
   footer: string;
 };

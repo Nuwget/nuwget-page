@@ -1,6 +1,7 @@
 import type { Content } from "@/content/types";
 import { About } from "./About";
 import { Availability } from "./Availability";
+import { BubuEgg } from "./BubuEgg";
 import { Contact } from "./Contact";
 import { Education } from "./Education";
 import { Experience } from "./Experience";
@@ -29,6 +30,7 @@ export function Page({ c }: { c: Content }) {
         <Contact c={c} />
       </main>
       <Footer c={c} />
+      <BubuEgg c={c} />
     </>
   );
 }

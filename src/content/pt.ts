@@ -444,6 +444,14 @@ export const pt: Content = {
       { label: "GitHub", href: GITHUB },
     ],
   },
+  easter: {
+    pokeLabel: "Bubu dormindo",
+    modal: "OOOO FAMILY, VOU CONTAR AO DUDU, VC TÁ DOIDO?",
+    close: "Foi mal, Bubu",
+    toastTitle: "Conquista desbloqueada",
+    toastText: "Acordou a Bubu",
+    toastAgain: "Você já tinha acordado a Bubu",
+  },
   footer:
     "Dudu no código, Bubu no sofá. A madrugada é longa e o café ainda está quente.",
 };
