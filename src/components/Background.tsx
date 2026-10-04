@@ -14,7 +14,7 @@ function mulberry32(seed: number) {
 }
 
 type Building = { x: number; w: number; h: number; tone: number };
-type Win = { x: number; y: number; c: number; blink: boolean };
+type Win = { x: number; y: number; c: number };
 
 const W = 640;
 const H = 64;
@@ -36,7 +36,6 @@ function buildSkyline() {
             x: wx,
             y: wy,
             c: rnd() > 0.7 ? 1 : 0,
-            blink: rnd() > 0.93,
           });
         }
       }
@@ -102,7 +101,7 @@ export function Background() {
 
       <motion.svg
         className="absolute inset-x-0 bottom-0 h-[20vh] min-h-32 w-full opacity-45"
-        style={{ y: reduce ? 0 : skylineY }}
+        style={{ y: reduce ? 0 : skylineY, willChange: "transform" }}
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMax slice"
         shapeRendering="crispEdges"
@@ -119,14 +118,9 @@ export function Background() {
             height={2}
             fill={LIGHTS[w.c]}
             opacity={0.6}
-            className={w.blink ? "window-blink" : undefined}
           />
         ))}
       </motion.svg>
-      <style>{`
-        @keyframes window-blink { 0%, 100% { opacity: .6 } 50% { opacity: .08 } }
-        .window-blink { animation: window-blink 5s ease-in-out infinite; }
-      `}</style>
     </div>
   );
 }

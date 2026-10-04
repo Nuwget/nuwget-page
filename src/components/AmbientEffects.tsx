@@ -15,7 +15,23 @@ type P = {
   star: boolean;
 };
 
-// One fixed, low-cost canvas: twinkling stars plus slow warm/lavender motes.
+const FRAME_MS = 1000 / 30; // 30 fps is plenty for slow-drifting motes
+
+function glowSprite(rgb: string): HTMLCanvasElement {
+  const size = 64;
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, `rgba(${rgb},1)`);
+  grad.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  return c;
+}
+
+// One fixed canvas: twinkling stars plus slow warm/lavender motes drawn from
+// pre-rendered sprites (no per-frame gradients), at 30 fps, paused when hidden.
 export function AmbientEffects() {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduce = useReducedMotion();
@@ -23,29 +39,32 @@ export function AmbientEffects() {
   useEffect(() => {
     if (reduce) return;
     const canvas = ref.current;
-    const ctx = canvas?.getContext("2d");
+    const ctx = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !ctx) return;
 
+    const warm = glowSprite("255,201,138");
+    const cool = glowSprite("201,184,255");
     let w = 0;
     let h = 0;
     let raf = 0;
+    let last = 0;
     let running = true;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = 1; // soft sprites do not need retina resolution
     let particles: P[] = [];
 
     const make = (): P[] => {
       const small = window.innerWidth < 768;
-      const stars = small ? 34 : 70;
-      const motes = small ? 14 : 30;
+      const stars = small ? 24 : 48;
+      const motes = small ? 8 : 16;
       const list: P[] = [];
       for (let i = 0; i < stars + motes; i++) {
         const star = i < stars;
         list.push({
           x: Math.random() * w,
           y: Math.random() * h * (star ? 0.7 : 1),
-          r: star ? 0.5 + Math.random() * 1.1 : 1 + Math.random() * 2,
-          vy: star ? 0 : -(0.06 + Math.random() * 0.16),
-          vx: star ? 0 : (Math.random() - 0.5) * 0.12,
+          r: star ? 1 + Math.random() * 1.2 : 6 + Math.random() * 10,
+          vy: star ? 0 : -(0.12 + Math.random() * 0.3),
+          vx: star ? 0 : (Math.random() - 0.5) * 0.25,
           phase: Math.random() * Math.PI * 2,
           speed: 0.4 + Math.random() * 1.2,
           warm: Math.random() > 0.55,
@@ -60,46 +79,40 @@ export function AmbientEffects() {
       h = window.innerHeight;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       particles = make();
     };
 
     const frame = (t: number) => {
       if (!running) return;
+      raf = requestAnimationFrame(frame);
+      if (t - last < FRAME_MS) return;
+      last = t;
       ctx.clearRect(0, 0, w, h);
       const time = t / 1000;
       for (const p of particles) {
-        if (!p.star) {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.y < -10) {
-            p.y = h + 10;
-            p.x = Math.random() * w;
-          }
-        }
         const tw = 0.5 + 0.5 * Math.sin(time * p.speed + p.phase);
         if (p.star) {
-          ctx.fillStyle = `rgba(226,218,255,${0.15 + tw * 0.6})`;
+          ctx.globalAlpha = 0.15 + tw * 0.6;
+          ctx.fillStyle = "#e2daff";
           ctx.fillRect(p.x, p.y, p.r, p.r);
         } else {
-          const a = 0.1 + tw * 0.35;
-          const color = p.warm ? "255,201,138" : "201,184,255";
-          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
-          g.addColorStop(0, `rgba(${color},${a})`);
-          g.addColorStop(1, `rgba(${color},0)`);
-          ctx.fillStyle = g;
-          ctx.fillRect(p.x - p.r * 4, p.y - p.r * 4, p.r * 8, p.r * 8);
+          p.x += p.vx * 2;
+          p.y += p.vy * 2;
+          if (p.y < -20) {
+            p.y = h + 20;
+            p.x = Math.random() * w;
+          }
+          ctx.globalAlpha = 0.07 + tw * 0.22;
+          ctx.drawImage(p.warm ? warm : cool, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
         }
       }
-      raf = requestAnimationFrame(frame);
+      ctx.globalAlpha = 1;
     };
 
     const onVisibility = () => {
       running = !document.hidden;
+      cancelAnimationFrame(raf);
       if (running) raf = requestAnimationFrame(frame);
-      else cancelAnimationFrame(raf);
     };
 
     resize();
@@ -118,7 +131,7 @@ export function AmbientEffects() {
     <canvas
       ref={ref}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10"
+      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
     />
   );
 }

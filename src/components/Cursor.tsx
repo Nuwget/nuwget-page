@@ -65,7 +65,6 @@ export function Cursor() {
         style={{
           background:
             "radial-gradient(circle, rgb(139 109 240 / 0.20) 0%, rgb(139 109 240 / 0.07) 40%, transparent 70%)",
-          mixBlendMode: "screen",
         }}
       />
       <div
