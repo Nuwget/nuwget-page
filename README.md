@@ -13,6 +13,12 @@ Todo o conteúdo vem do README do perfil e está em `src/content/` (PT-BR em `pt
 
 Cada idioma tem sua rota: português em `/` e inglês em `/en/` (e `/v1/en/` na v1).
 
+## Detalhes
+
+- **Portão de idioma**: toda visita abre uma tela de escolha (Português / English) com um fundo em shader WebGL (ruído fractal com distorção de domínio, reage ao ponteiro), palavras gigantes com hover magnético e uma transição em círculo que se abre do ponto clicado. Escolher o outro idioma navega com um véu roxo que se dissolve na página nova. Sem JavaScript ou com movimento reduzido, o portão some ou vira um fade simples.
+- **Easter egg da Bubu**: tocar na cabeça dela (no hero ou no recorte do Sobre) acorda a Bubu. Ela fica brava, depois o Dudu também, e na terceira vez rola a autodestruição rumo ao Google. Dá para pedir desculpas durante a contagem. O estado vale só para a sessão do navegador.
+- **Desempenho**: hero em sprites WebP com alpha (`scripts/bake-sprites.mjs`), animações só em `transform`/`opacity`, tudo pausa fora da tela.
+
 ## Stack
 
 Next.js (App Router, export estático) · React · TypeScript · Tailwind CSS 4 · Motion.
