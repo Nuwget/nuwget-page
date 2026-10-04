@@ -1,26 +1,297 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-0: #06051a;
+  --bg-1: #0c0a2a;
+  --bg-2: #171039;
+  --ink: #eeeaff;
+  --muted: #b3acdf;
+  --faint: #8780b8;
+  --violet: #8b6df0;
+  --lavender: #c9b8ff;
+  --magenta: #e879c8;
+  --warm: #ffc98a;
+  --line: rgb(201 184 255 / 0.14);
+  --glass: rgb(16 12 46 / 0.55);
+  --radius: 1.25rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg-0);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-violet: var(--violet);
+  --color-lavender: var(--lavender);
+  --color-magenta: var(--magenta);
+  --color-warm: var(--warm);
+  --color-line: var(--line);
+  --font-sans: var(--f-sans);
+  --font-display: var(--f-display);
+  --font-mono: var(--f-mono);
+  --font-pixel: var(--f-pixel);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  background: var(--bg-0);
+  color-scheme: dark;
+}
+
+/* No body background: the fixed Background layer (z-index -10) must show through. */
+body {
+  color: var(--ink);
+  font-family: var(--f-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgb(139 109 240 / 0.45);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lavender);
+  outline-offset: 3px;
+  border-radius: 0.4rem;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+/* Film grain: a tiny static SVG noise tile, composited once. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 24px 60px -32px rgb(0 0 0 / 0.7);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  color: var(--lavender);
+  background: rgb(139 109 240 / 0.1);
+  border: 1px solid rgb(201 184 255 / 0.2);
+  border-radius: 999px;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease;
+}
+.chip:hover {
+  transform: translateY(-2px);
+  color: #fff;
+  background: rgb(139 109 240 / 0.28);
+  box-shadow: 0 8px 24px -8px rgb(139 109 240 / 0.8);
+}
+
+.eyebrow {
+  font-family: var(--f-pixel), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Scene layers (hero) */
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes drift-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -12px, 0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- Hero scene ---------- */
+.scene {
+  --w: max(100vw, calc(100svh * 1.4994));
+  position: absolute;
+  top: 50%;
+  width: var(--w);
+  aspect-ratio: 1600 / 1067;
+  /* keep Dudu framed on narrow screens, never reveal an empty edge */
+  left: clamp(calc(100vw - var(--w)), calc(50vw - var(--fx) * var(--w)), 0px);
+  transform: translateY(-50%);
+  --mx: 0;
+  --my: 0;
+}
+
+.scene .px {
+  translate: calc(var(--mx) * var(--k, 4) * 1px) calc(var(--my) * var(--k, 4) * 0.7px);
+}
+
+.dudu-mask {
+  -webkit-mask-image:
+    radial-gradient(ellipse 20% 29% at 39.5% 47%, #000 70%, transparent 100%),
+    radial-gradient(ellipse 9% 7% at 49% 72%, #000 60%, transparent 100%);
+  mask-image:
+    radial-gradient(ellipse 20% 29% at 39.5% 47%, #000 70%, transparent 100%),
+    radial-gradient(ellipse 9% 7% at 49% 72%, #000 60%, transparent 100%);
+}
+
+.bubu-mask {
+  -webkit-mask-image: radial-gradient(ellipse 8% 10% at 86% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 8% 10% at 86% 50%, #000 62%, transparent 100%);
+}
+
+.fg-mask {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 76%, #000 86%);
+  mask-image: linear-gradient(to bottom, transparent 76%, #000 86%);
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.011) translateY(-0.18%); }
+}
+@keyframes breathe-slow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02) translateY(-0.3%); }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-0.22deg); }
+  50% { transform: rotate(0.28deg); }
+}
+@keyframes blink {
+  0%, 90%, 94%, 96.5%, 100% { opacity: 0; }
+  91.5%, 93%, 97%, 98.2% { opacity: 1; }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 0.8; }
+  18% { opacity: 0.6; }
+  33% { opacity: 0.95; }
+  57% { opacity: 0.7; }
+  81% { opacity: 1; }
+}
+
+.anim-breathe { animation: breathe 5.2s ease-in-out infinite; transform-origin: 40% 88%; }
+.anim-breathe-slow { animation: breathe-slow 7.5s ease-in-out infinite; transform-origin: 86% 62%; }
+.anim-sway { animation: sway 9s ease-in-out infinite; transform-origin: 40% 92%; }
+.anim-blink { animation: blink 7.5s linear infinite; }
+.anim-glow { animation: glow-pulse 6s ease-in-out infinite; }
+.anim-flicker { animation: flicker 3.4s steps(1, end) infinite; }
+
+.glow {
+  position: absolute;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+  border: 1px solid rgb(201 184 255 / 0.3);
+  border-radius: 999px;
+  background: rgb(16 12 46 / 0.4);
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease,
+    background 0.3s ease,
+    border-color 0.3s ease;
+}
+.btn span {
+  transition: transform 0.25s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  border-color: rgb(201 184 255 / 0.7);
+  box-shadow: 0 10px 30px -10px rgb(139 109 240 / 0.9);
+}
+.btn:hover span {
+  transform: translate(2px, -2px);
+}
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-solid {
+  background: linear-gradient(135deg, #7c5cf0, #a283ff);
+  border-color: transparent;
+  color: #0b0722;
+}
+.btn-solid:hover {
+  box-shadow: 0 12px 34px -8px rgb(160 130 255 / 0.95);
+}
+
+/* ---------- Glow card ---------- */
+.glow-card {
+  --px: 50%;
+  --py: 0%;
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  border-radius: var(--radius);
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease;
+}
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(420px circle at var(--px) var(--py), rgb(139 109 240 / 0.2), transparent 60%);
+}
+.glow-card:hover {
+  border-color: rgb(201 184 255 / 0.32);
+}
+.glow-card:hover::before {
+  opacity: 1;
 }
