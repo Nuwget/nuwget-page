@@ -1,5 +1,7 @@
 # nuwget-page
 
+**[abrir no ar](https://nuwget.github.io/nuwget-page/)** · <https://nuwget.github.io/nuwget-page/>
+
 Página pessoal do **Nuwget** (César Rodrigues Ribeiro): o Dudu, um urso roxo desenvolvedor, programando de madrugada enquanto a Bubu descansa no sofá.
 
 Todo o conteúdo vem do README do perfil e está em `src/content/` (PT-BR em `pt.ts`, tradução fiel em `en.ts`). Nada é inventado: o que não existe no README não aparece na página.
@@ -32,6 +34,8 @@ npm run build    # gera ./out
 ```
 
 ## GitHub Pages
+
+No ar em **https://nuwget.github.io/nuwget-page/**
 
 O site é 100% estático (`output: "export"`), sem middleware, redirects de servidor nem rotas de API.
 
