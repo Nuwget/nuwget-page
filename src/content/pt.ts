@@ -455,6 +455,7 @@ export const pt: Content = {
     toastWarn: "Irritou o Dudu também",
     toastForgiven: "A Bubu te perdoou. Por enquanto.",
     bye: "TCHAU, VC NÃO É RESPEITOSO!",
+    asked: "AGORA VC PEDIU!",
     countdown: "AUTO DESTRUIÇÃO EM",
     apologize: "Pedir desculpas",
   },

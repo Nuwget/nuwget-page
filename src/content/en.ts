@@ -332,6 +332,7 @@ export const en: Content = {
     toastWarn: "Made Dudu angry too",
     toastForgiven: "Bubu forgave you. For now.",
     bye: "BYE, YOU'RE NOT RESPECTFUL!",
+    asked: "NOW YOU ASKED FOR IT!",
     countdown: "SELF-DESTRUCT IN",
     apologize: "Apologize",
   },

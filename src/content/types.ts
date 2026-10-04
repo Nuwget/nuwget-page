@@ -114,6 +114,7 @@ export type Content = {
     toastWarn: string;
     toastForgiven: string;
     bye: string;
+    asked: string;
     countdown: string;
     apologize: string;
   };

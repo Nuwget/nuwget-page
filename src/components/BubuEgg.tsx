@@ -12,7 +12,8 @@ import { Crop } from "./Crop";
 const EVENT = "bubu-poke";
 const STAGE_KEY = "nuwget-bubu-stage";
 const GOOGLE = "https://www.google.com/";
-const FAMILY_SRC = "/audio/family.mp3"; // the "oooo family" line, 3.4 s
+const FAMILY_SRC = "/audio/family.mp3"; // the "oooo family" line
+const RAGE_SRC = "/audio/atatat.mp3"; // "atatat atatat atatata", looped while the modal is open
 
 /** Invisible hit area over Bubu's head and nose. Click or tap pokes her. */
 export function PokeBubu({
@@ -36,7 +37,10 @@ export function PokeBubu({
   );
 }
 
-/** 0 = asleep, 1 = Bubu angry, 2 = Dudu angry too. Kept for the browser session. */
+/**
+ * 0 = asleep, 1 = Bubu angry, 2 = Dudu angry too, 3 = forgave you once (calm, but
+ * the next poke is the last). Kept for the browser session.
+ */
 function readStage(): number {
   try {
     return Number(sessionStorage.getItem(STAGE_KEY)) || 0;
@@ -53,15 +57,15 @@ function writeStage(n: number) {
 }
 function applyMood(stage: number) {
   const d = document.documentElement;
-  if (stage >= 1) d.dataset.bubu = "angry";
+  if (stage === 1 || stage === 2) d.dataset.bubu = "angry";
   else delete d.dataset.bubu;
-  if (stage >= 2) d.dataset.dudu = "angry";
+  if (stage === 2) d.dataset.dudu = "angry";
   else delete d.dataset.dudu;
 }
 
 type Scene = null | "wake" | "warn";
 type Toast = null | "wake" | "warn" | "forgiven";
-type Farewell = null | { phase: "bye" | "count" | "boom"; n: number };
+type Farewell = null | { phase: "bye" | "count" | "boom"; n: number; final: boolean };
 
 const DUDU_BOX = { x: 22, y: 24, w: 36, h: 44 };
 const BUBU_BOX = { x: 76, y: 39, w: 20, h: 22 };
@@ -161,7 +165,8 @@ function FarewellScreen({
   onCancel: () => void;
 }) {
   const { easter } = c;
-  const typed = useTypewriter(easter.bye, true, reduce ? 10 : 60);
+  const line = state.final ? easter.asked : easter.bye;
+  const typed = useTypewriter(line, true, reduce ? 10 : 60);
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => btn.current?.focus(), []);
   const boom = state.phase === "boom";
@@ -169,7 +174,7 @@ function FarewellScreen({
     <motion.div
       role="alertdialog"
       aria-modal="true"
-      aria-label={easter.bye}
+      aria-label={line}
       className={`fixed inset-0 z-[95] grid place-items-center overflow-hidden p-5 ${boom ? "bg-black" : "bg-[#12030f]/95"}`}
       initial={reduce ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -203,9 +208,11 @@ function FarewellScreen({
               </motion.p>
             </div>
           )}
-          <button ref={btn} type="button" className="btn mt-6" onClick={onCancel}>
-            {easter.apologize}
-          </button>
+          {!state.final && (
+            <button ref={btn} type="button" className="btn mt-6" onClick={onCancel}>
+              {easter.apologize}
+            </button>
+          )}
         </div>
       )}
       {boom && (
@@ -245,29 +252,54 @@ export function BubuEgg({ c }: { c: Content }) {
   const toastTimer = useRef<number | undefined>(undefined);
   const timers = useRef<number[]>([]);
   const familyRef = useRef<HTMLAudioElement | null>(null);
+  const rageRef = useRef<HTMLAudioElement | null>(null);
+  const soundOn = useRef(false);
 
-  // Load the "oooo family" line ahead of time so it starts instantly on the tap.
+  // Load both lines ahead of time so they start instantly on the tap.
   useEffect(() => {
-    const a = new Audio(asset(FAMILY_SRC));
-    a.preload = "auto";
-    a.volume = 0.9;
-    familyRef.current = a;
+    const family = new Audio(asset(FAMILY_SRC));
+    family.preload = "auto";
+    family.volume = 0.9;
+    const rage = new Audio(asset(RAGE_SRC));
+    rage.preload = "auto";
+    rage.loop = true;
+    rage.volume = 0.85;
+    familyRef.current = family;
+    rageRef.current = rage;
     return () => {
-      a.pause();
+      family.pause();
+      rage.pause();
       familyRef.current = null;
+      rageRef.current = null;
     };
   }, []);
 
+  /** "oooo family", then "atatat atatat atatata" on repeat until the modal closes. */
   const playFamily = useCallback(() => {
-    const a = familyRef.current;
-    if (!a) return;
-    a.currentTime = 0;
-    a.play().catch(() => {
+    const family = familyRef.current;
+    const rage = rageRef.current;
+    if (!family || !rage) return;
+    soundOn.current = true;
+    rage.pause();
+    family.onended = () => {
+      if (!soundOn.current) return;
+      rage.currentTime = 0;
+      rage.play().catch(() => {});
+    };
+    family.currentTime = 0;
+    family.play().catch(() => {
       /* autoplay blocked or no audio device: the animation carries on without sound */
     });
   }, []);
 
-  const stopFamily = useCallback(() => familyRef.current?.pause(), []);
+  const stopFamily = useCallback(() => {
+    soundOn.current = false;
+    if (familyRef.current) {
+      familyRef.current.onended = null;
+      familyRef.current.pause();
+    }
+    rageRef.current?.pause();
+  }, []);
 
   // Restore the mood after a reload inside the same session.
   useEffect(() => {
@@ -293,12 +325,12 @@ export function BubuEgg({ c }: { c: Content }) {
   const cancelFarewell = useCallback(() => {
     stopDoom();
     setFarewell(null);
-    writeStage(0);
-    applyMood(0);
+    writeStage(3); // forgiven once: the next poke is the last
+    applyMood(3);
     showToast("forgiven");
   }, [showToast, stopDoom]);
 
-  const startFarewell = useCallback(() => {
+  const startFarewell = useCallback((final: boolean) => {
     opener.current = document.activeElement;
     stopFamily();
     const root = document.documentElement;
@@ -308,22 +340,22 @@ export function BubuEgg({ c }: { c: Content }) {
       root.style.setProperty("--doom", String(v));
     };
     const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
-    setFarewell({ phase: "bye", n: 3 });
+    setFarewell({ phase: "bye", n: 3, final });
     doom(0.5);
     at(2600, () => {
-      setFarewell({ phase: "count", n: 3 });
+      setFarewell({ phase: "count", n: 3, final });
       doom(1);
     });
     at(3600, () => {
-      setFarewell({ phase: "count", n: 2 });
+      setFarewell({ phase: "count", n: 2, final });
       doom(1.8);
     });
     at(4600, () => {
-      setFarewell({ phase: "count", n: 1 });
+      setFarewell({ phase: "count", n: 1, final });
       doom(2.8);
     });
     at(5600, () => {
-      setFarewell({ phase: "boom", n: 0 });
+      setFarewell({ phase: "boom", n: 0, final });
       doom(4);
     });
     at(7200, () => {
@@ -347,7 +379,7 @@ export function BubuEgg({ c }: { c: Content }) {
       showToast("warn", 700);
       playFamily();
     } else {
-      startFarewell();
+      startFarewell(stage >= 3);
     }
   }, [scene, farewell, showToast, startFarewell, playFamily]);
 
@@ -389,7 +421,7 @@ export function BubuEgg({ c }: { c: Content }) {
     if (scene) closeRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (farewell && farewell.phase !== "boom") cancelFarewell();
+        if (farewell && !farewell.final && farewell.phase !== "boom") cancelFarewell();
         else if (scene) closeScene();
       }
       if (e.key === "Tab") e.preventDefault(); // single focusable control: keep focus in the dialog
