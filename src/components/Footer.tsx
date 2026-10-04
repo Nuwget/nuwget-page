@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import type { Content } from "@/content/types";
 import { asset } from "@/lib/asset";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const FULL = asset("/images/dudu-closing-989.webp");
 const SMALL = asset("/images/dudu-closing-640.webp");

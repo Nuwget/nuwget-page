@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useSpring } from "motion/react";
+import { motion, useScroll, useSpring } from "motion/react";
 import type { Content } from "@/content/types";
 import { Reveal, Stagger, StaggerItem } from "./Reveal";
 import { Section } from "./Section";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export function Experience({ c }: { c: Content }) {
   const ref = useRef<HTMLDivElement>(null);

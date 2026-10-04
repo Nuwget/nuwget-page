@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { Content } from "@/content/types";
 import { DuduAvatar } from "./DuduAvatar";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export function Nav({ c }: { c: Content }) {
   const [scrolled, setScrolled] = useState(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 // A soft violet glow that trails the pointer and swells over interactive elements.
 // The native cursor stays visible. Only mounted for fine pointers (no touch).

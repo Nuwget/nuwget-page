@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 // Deterministic PRNG so server and client render the same skyline.
 function mulberry32(seed: number) {

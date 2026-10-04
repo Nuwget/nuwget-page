@@ -3,13 +3,13 @@
 import { useRef } from "react";
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
 } from "motion/react";
 import type { Content } from "@/content/types";
 import { DuduAvatar } from "./DuduAvatar";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 function Word({
   word,

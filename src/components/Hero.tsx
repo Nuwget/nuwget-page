@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import type { Content } from "@/content/types";
 import { asset } from "@/lib/asset";
 import { SCENE } from "@/lib/scene";
 import { Bubu } from "./Bubu";
 import { Dudu } from "./Dudu";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const BASE = asset(SCENE.src.full);
 const BASE_SET = `${asset(SCENE.src.small)} 1000w, ${asset(SCENE.src.full)} 1600w`;
