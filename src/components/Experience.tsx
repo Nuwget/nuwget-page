@@ -43,13 +43,13 @@ export function Experience({ c }: { c: Content }) {
               </p>
 
               {role.summary && (
-                <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted">{role.summary}</p>
+                <p className="mt-6 max-w-[62ch] text-[1.0625rem] leading-[1.8] text-muted">{role.summary}</p>
               )}
 
-              <Stagger as="ul" step={0.05} className="mt-6 grid max-w-4xl gap-3">
+              <Stagger as="ul" step={0.05} className="mt-6 grid max-w-5xl gap-3 lg:grid-cols-2 lg:gap-x-10">
                 {role.bullets.map((b) => (
                   <StaggerItem as="li" key={b}>
-                    <div className="flex gap-3 leading-relaxed text-muted">
+                    <div className="flex gap-3 text-[0.97rem] leading-[1.7] text-muted">
                       <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 bg-violet" />
                       <span>{b}</span>
                     </div>
