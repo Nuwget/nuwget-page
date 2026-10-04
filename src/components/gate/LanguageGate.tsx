@@ -6,20 +6,33 @@ import type { Lang } from "@/content/types";
 import { asset } from "@/lib/asset";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { DuduAvatar } from "../DuduAvatar";
+import { GateScenery } from "./GateScenery";
 import { GateShader } from "./GateShader";
+import { GateSky } from "./GateSky";
+import { PixelWipe, type WipeHandle } from "./PixelWipe";
 
-type Phase = "choose" | "covering" | "covered" | "dissolving" | "done";
+/**
+ * choose      the choice screen is up
+ * picking     a card was picked; the pixel wipe is covering the screen
+ * navigating  other language: the wipe is done and the new page is loading
+ * opening     same language: the gate is gone and the wipe dissolves over the page
+ * revealing   arrived from the other language: the wipe dissolves over the new page
+ */
+type Phase = "choose" | "picking" | "navigating" | "opening" | "revealing" | "done";
 
 const GateCtx = createContext<{ ready: boolean }>({ ready: true });
-/** `ready` turns true when the gate has opened, so entrance animations wait for it. */
+/** `ready` turns true as the gate opens, so entrance animations wait for it. */
 export const useGate = () => useContext(GateCtx);
 
 export const GATE_KEY = "nuwget-gate";
 
-const CHOICES: { lang: Lang; word: string; tag: string; sub: string; href: string }[] = [
-  { lang: "pt", word: "Português", tag: "PT-BR", sub: "Brasil", href: "/" },
-  { lang: "en", word: "English", tag: "EN", sub: "International", href: "/en/" },
+const CHOICES: { lang: Lang; code: string; key: string; name: string; cta: string; href: string }[] = [
+  { lang: "pt", code: "PT-BR", key: "P", name: "Português", cta: "Continuar em português", href: "/" },
+  { lang: "en", code: "EN", key: "E", name: "English", cta: "Continue in English", href: "/en/" },
 ];
+
+const COVER_MS = 680;
+const UNCOVER_MS = 950;
 
 export function GateProvider({ lang, children }: { lang: Lang; children: React.ReactNode }) {
   const reduce = useReducedMotion();
@@ -31,17 +44,15 @@ export function GateProvider({ lang, children }: { lang: Lang; children: React.R
     () => "show",
   );
   const [chosen, setPhase] = useState<Phase | null>(null);
-  const phase: Phase = chosen ?? (mode === "reveal" ? "covered" : "choose");
-  const [pick, setPick] = useState<{ x: number; y: number; r: number; lang: Lang }>({
-    x: 0,
-    y: 0,
-    r: 0,
-    lang,
-  });
+  const [picked, setPicked] = useState<{ lang: Lang; x: number; y: number } | null>(null);
+  const [covered, setCovered] = useState(false);
+  const phase: Phase = chosen ?? (mode === "reveal" ? "revealing" : "choose");
   const pageRef = useRef<HTMLDivElement>(null);
+  const gateRef = useRef<HTMLDivElement>(null);
+  const wipe = useRef<WipeHandle>(null);
 
-  const ready = phase === "dissolving" || phase === "done";
-  const locked = phase === "choose" || phase === "covering" || phase === "covered";
+  const ready = phase === "opening" || phase === "revealing" || phase === "done";
+  const locked = phase === "choose" || phase === "picking" || phase === "navigating";
 
   useEffect(() => {
     document.documentElement.style.overflow = locked ? "hidden" : "";
@@ -51,93 +62,125 @@ export function GateProvider({ lang, children }: { lang: Lang; children: React.R
     };
   }, [locked]);
 
+  // Arrived from the other language: the CSS veil is up; swap it for the canvas and dissolve.
   useEffect(() => {
-    if (phase !== "covered") return;
-    // Same language chosen: open straight away. Arrived by reveal: give the page a beat to settle.
-    const revealed = mode === "reveal" && pick.r === 0;
-    const t = window.setTimeout(() => setPhase("dissolving"), revealed ? 380 : 60);
-    return () => window.clearTimeout(t);
-  }, [phase, pick.r, mode]);
+    if (phase !== "revealing") return;
+    const safety = window.setTimeout(() => setPhase("done"), reduce ? 700 : 3000);
+    if (!reduce && wipe.current) {
+      wipe.current.fill();
+      setCovered(true);
+      wipe.current.uncover([0.5, 0.5], UNCOVER_MS).then(() => setPhase("done"));
+    }
+    return () => window.clearTimeout(safety);
+  }, [phase, reduce]);
+
+  // Warm the cache for the other language so the switch is quick.
+  useEffect(() => {
+    if (phase !== "choose") return;
+    const other = CHOICES.find((c) => c.lang !== lang)!;
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = asset(other.href);
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [phase, lang]);
+
+  // Pointer parallax for moon, clouds and skyline.
+  useEffect(() => {
+    if (phase !== "choose" || reduce) return;
+    const el = gateRef.current;
+    if (!el) return;
+    let raf = 0;
+    let nx = 0;
+    let ny = 0;
+    const onMove = (e: PointerEvent) => {
+      nx = (e.clientX / window.innerWidth) * 2 - 1;
+      ny = (e.clientY / window.innerHeight) * 2 - 1;
+      if (!raf)
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          el.style.setProperty("--px", nx.toFixed(3));
+          el.style.setProperty("--py", ny.toFixed(3));
+        });
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, [phase, reduce]);
 
   const choose = useCallback(
     (next: Lang, x: number, y: number) => {
       if (phase !== "choose") return;
-      const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      setPick({ x, y, r, lang: next });
-      setPhase("covering");
-    },
-    [phase],
-  );
+      setPicked({ lang: next, x, y });
+      setPhase("picking");
+      const same = next === lang;
+      const origin: [number, number] = [x / window.innerWidth, y / window.innerHeight];
+      const target = CHOICES.find((c) => c.lang === next)!.href;
 
-  const onVeilDone = () => {
-    if (phase === "covering") {
-      if (pick.lang === lang) {
-        setPhase("covered");
-      } else {
+      if (!same) {
         try {
           sessionStorage.setItem(GATE_KEY, "reveal");
         } catch {
           /* storage blocked: the other page simply shows its own gate */
         }
-        const target = CHOICES.find((c) => c.lang === pick.lang)!.href;
-        window.location.assign(asset(target));
       }
-    } else if (phase === "dissolving") {
-      setPhase("done");
-    }
-  };
+      if (reduce || !wipe.current) {
+        if (same) setPhase("done");
+        else window.location.assign(asset(target));
+        return;
+      }
+      if (!same) {
+        // start loading while the wipe is still closing
+        window.setTimeout(() => window.location.assign(asset(target)), COVER_MS * 0.72);
+      }
+      wipe.current.cover(origin, COVER_MS).then(() => {
+        if (same) {
+          setPhase("opening");
+          wipe.current?.uncover(origin, UNCOVER_MS).then(() => setPhase("done"));
+        } else {
+          setPhase("navigating");
+        }
+      });
+    },
+    [phase, lang, reduce],
+  );
 
-  const veil =
-    phase === "covering"
-      ? reduce
-        ? { opacity: [0, 1] }
-        : {
-            opacity: 1,
-            clipPath: [
-              `circle(0px at ${pick.x}px ${pick.y}px)`,
-              `circle(${pick.r}px at ${pick.x}px ${pick.y}px)`,
-            ],
-          }
-      : phase === "choose"
-        ? { opacity: 0 }
-        : phase === "covered"
-          ? { opacity: 1 }
-          : phase === "dissolving"
-            ? reduce
-              ? { opacity: 0 }
-              : { opacity: 0, scale: 1.06 }
-            : undefined;
-
-  const veilTransition =
-    phase === "covering"
-      ? { duration: reduce ? 0.25 : 0.9, ease: [0.76, 0, 0.18, 1] as const }
-      : phase === "dissolving"
-        ? { duration: reduce ? 0.3 : 1.15, ease: [0.22, 1, 0.36, 1] as const }
-        : { duration: 0 };
+  const showGate = phase === "choose" || phase === "picking" || phase === "navigating" || phase === "revealing";
 
   return (
     <GateCtx.Provider value={{ ready }}>
-      {phase !== "done" && (
+      {showGate && (
         <div
+          ref={gateRef}
           className="gate"
           data-phase={phase}
-          role={phase === "choose" || phase === "covering" ? "dialog" : undefined}
-          aria-modal={phase === "choose" || phase === "covering" ? true : undefined}
+          data-picked={picked?.lang}
+          data-covered={covered ? "true" : undefined}
+          data-reduce={reduce ? "true" : undefined}
+          role={phase === "choose" || phase === "picking" ? "dialog" : undefined}
+          aria-modal={phase === "choose" || phase === "picking" ? true : undefined}
           aria-label="Escolha o idioma / Choose your language"
         >
           <div className="gate-ui" aria-hidden={phase !== "choose" ? true : undefined}>
-            {!reduce && <GateShader active={phase === "choose" || phase === "covering"} />}
+            <div aria-hidden="true" className="gate-smoke">
+              <i />
+              <i />
+              <i />
+            </div>
+            <GateShader key={reduce ? "still" : "live"} active={phase === "choose" || phase === "picking"} still={reduce} />
+            {!reduce && <GateSky active={phase === "choose" || phase === "picking"} />}
+            <GateScenery />
             <GateContent current={lang} phase={phase} onPick={choose} reduce={reduce} />
+            {picked && phase === "picking" && !reduce && (
+              <span aria-hidden="true" className="gate-ring" style={{ left: picked.x, top: picked.y }} />
+            )}
           </div>
-          <motion.div
-            className="gate-veil"
-            initial={false}
-            animate={veil}
-            transition={veilTransition}
-            onAnimationComplete={onVeilDone}
-          />
+          <div className="gate-veil" />
         </div>
       )}
+      <PixelWipe ref={wipe} />
       <div ref={pageRef} id="page-root">
         {children}
       </div>
@@ -163,11 +206,9 @@ function GateContent({
     refs.current[CHOICES.findIndex((c) => c.lang === current)]?.focus({ preventScroll: true });
   }, [phase, current]);
 
-  const choose = (lang: Lang, el: HTMLElement, e?: { clientX: number; clientY: number }) => {
+  const pick = (lang: Lang, el: HTMLElement, e?: { clientX: number; clientY: number }) => {
     const r = el.getBoundingClientRect();
-    const x = e && e.clientX ? e.clientX : r.left + r.width / 2;
-    const y = e && e.clientY ? e.clientY : r.top + r.height / 2;
-    onPick(lang, x, y);
+    onPick(lang, e && e.clientX ? e.clientX : r.left + r.width / 2, e && e.clientY ? e.clientY : r.top + r.height / 2);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -178,123 +219,100 @@ function GateContent({
     } else if (["ArrowUp", "ArrowLeft"].includes(e.key)) {
       e.preventDefault();
       refs.current[(i - 1 + CHOICES.length) % CHOICES.length]?.focus();
-    } else if (e.key.toLowerCase() === "p" || e.key.toLowerCase() === "e") {
-      const k = CHOICES.findIndex((c) => c.lang === (e.key.toLowerCase() === "p" ? "pt" : "en"));
-      if (refs.current[k]) choose(CHOICES[k].lang, refs.current[k]!);
+    } else {
+      const k = CHOICES.findIndex((c) => c.key.toLowerCase() === e.key.toLowerCase());
+      if (k >= 0 && refs.current[k]) pick(CHOICES[k].lang, refs.current[k]!);
     }
   };
 
-  const rise = (delay: number) =>
-    reduce
-      ? {}
-      : {
-          initial: { opacity: 0, y: 24 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] as const },
-        };
+  // With reduced motion the content still settles in, just instantly (omitting the props
+  // would leave the server-rendered opacity: 0 in place).
+  const rise = (delay: number) => ({
+    initial: { opacity: 0, y: 18 },
+    animate: { opacity: 1, y: 0 },
+    transition: reduce ? { duration: 0 } : { duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
 
   return (
-    <div className="relative mx-auto flex h-full max-w-6xl flex-col px-5 py-6 sm:px-8 sm:py-8" onKeyDown={onKeyDown}>
-      <motion.header className="flex items-center justify-between" {...rise(0.2)}>
-        <div className="flex items-center gap-3">
-          <DuduAvatar size={40} />
-          <span className="font-display text-2xl leading-none">Nuwget</span>
+    <div
+      className="relative z-10 mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center px-5 py-8 text-center"
+      onKeyDown={onKeyDown}
+    >
+      <motion.div className="flex items-end justify-center gap-4" {...rise(0.1)}>
+        <div className="gate-avatar">
+          <DuduAvatar size={104} />
         </div>
-        <div aria-hidden="true" className="flex items-center gap-2 font-pixel text-xs tracking-[0.2em] text-lavender/70">
-          <span className="gate-z">z</span>
-          <DuduAvatar size={34} focus={[0.865, 0.5]} zoom={7.5} />
+        <div className="gate-avatar gate-avatar-sm relative">
+          <DuduAvatar size={54} focus={[0.865, 0.5]} zoom={7.5} />
+          <span aria-hidden="true" className="gate-z">
+            z
+          </span>
+          <span aria-hidden="true" className="gate-z gate-z2">
+            z
+          </span>
         </div>
-      </motion.header>
+      </motion.div>
 
-      <div className="flex flex-1 flex-col justify-center">
-        <motion.p className="font-pixel text-xs uppercase tracking-[0.22em] text-lavender/80 sm:text-sm" {...rise(0.35)}>
-          Escolha o idioma <span className="text-violet">/</span> Choose your language
-          <span className="gate-caret" aria-hidden="true" />
-        </motion.p>
+      <motion.h1
+        className="mt-7 bg-gradient-to-b from-white to-[#bfa9ff] bg-clip-text font-display text-[clamp(2.7rem,7.5vw,4.6rem)] leading-[0.95] tracking-tight text-transparent"
+        {...rise(0.22)}
+      >
+        Escolha o idioma
+      </motion.h1>
+      <motion.p className="mt-3 text-lg text-[#d8d1ff]" {...rise(0.3)}>
+        Choose your language
+      </motion.p>
 
-        <div className="mt-6 sm:mt-8">
-          {CHOICES.map((c, i) => (
-            <Choice
-              key={c.lang}
-              choice={c}
-              current={c.lang === current}
-              reduce={reduce}
-              delay={0.5 + i * 0.14}
-              innerRef={(el) => {
+      <div className="mt-10 grid w-full gap-4 sm:grid-cols-2">
+        {CHOICES.map((c, i) => (
+          <motion.div key={c.lang} {...rise(0.42 + i * 0.1)}>
+            <button
+              ref={(el) => {
                 refs.current[i] = el;
               }}
-              onChoose={(e) => choose(c.lang, e.currentTarget, e)}
-            />
-          ))}
-        </div>
+              type="button"
+              lang={c.lang === "pt" ? "pt-BR" : "en"}
+              className="gate-card"
+              data-lang={c.lang}
+              data-current={c.lang === current ? "true" : undefined}
+              onPointerMove={onCardMove}
+              onPointerLeave={onCardLeave}
+              onClick={(e) => pick(c.lang, e.currentTarget, e)}
+            >
+              <span className="gate-shine" aria-hidden="true" />
+              <span className="gate-card-top">
+                <span className="gate-code">{c.code}</span>
+                <span className="gate-arrow" aria-hidden="true">
+                  →
+                </span>
+              </span>
+              <span className="gate-name">{c.name}</span>
+              <span className="gate-card-bottom">
+                <span className="gate-cta">{c.cta}</span>
+                <kbd className="gate-kbd" aria-hidden="true">
+                  {c.key}
+                </kbd>
+              </span>
+            </button>
+          </motion.div>
+        ))}
       </div>
-
-      <motion.footer
-        className="flex items-center justify-between font-pixel text-[0.65rem] uppercase tracking-[0.2em] text-faint sm:text-xs"
-        {...rise(1)}
-      >
-        <span>Dudu &amp; Bubu</span>
-        <span className="hidden sm:inline">← → · P · E · Enter</span>
-      </motion.footer>
     </div>
   );
 }
 
-function Choice({
-  choice,
-  current,
-  reduce,
-  delay,
-  innerRef,
-  onChoose,
-}: {
-  choice: (typeof CHOICES)[number];
-  current: boolean;
-  reduce: boolean;
-  delay: number;
-  innerRef: (el: HTMLButtonElement | null) => void;
-  onChoose: (e: React.MouseEvent<HTMLButtonElement>) => void;
-}) {
-  const onMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--sx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--sy", `${e.clientY - r.top}px`);
-  };
+function onCardMove(e: React.PointerEvent<HTMLButtonElement>) {
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width;
+  const py = (e.clientY - r.top) / r.height;
+  el.style.setProperty("--sx", `${e.clientX - r.left}px`);
+  el.style.setProperty("--sy", `${e.clientY - r.top}px`);
+  el.style.setProperty("--rx", `${((0.5 - py) * 9).toFixed(2)}deg`);
+  el.style.setProperty("--ry", `${((px - 0.5) * 11).toFixed(2)}deg`);
+}
 
-  return (
-    <button
-      ref={innerRef}
-      type="button"
-      lang={choice.lang === "pt" ? "pt-BR" : "en"}
-      className="gate-choice"
-      data-current={current ? "true" : undefined}
-      onPointerMove={onMove}
-      onClick={onChoose}
-    >
-      <span className="gate-tag">
-        {choice.tag}
-        {current && <i aria-hidden="true" />}
-      </span>
-      <span className="gate-word" aria-label={choice.word}>
-        <span className="block overflow-hidden pb-[0.14em]">
-          <motion.span
-            className="flex"
-            initial={reduce ? false : { y: "110%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {[...choice.word].map((ch, i) => (
-              <span key={i} aria-hidden="true" className="gate-letter" style={{ transitionDelay: `${i * 24}ms` }}>
-                {ch}
-              </span>
-            ))}
-          </motion.span>
-        </span>
-      </span>
-      <span className="gate-sub">{choice.sub}</span>
-      <span className="gate-arrow" aria-hidden="true">
-        →
-      </span>
-    </button>
-  );
+function onCardLeave(e: React.PointerEvent<HTMLButtonElement>) {
+  e.currentTarget.style.setProperty("--rx", "0deg");
+  e.currentTarget.style.setProperty("--ry", "0deg");
 }

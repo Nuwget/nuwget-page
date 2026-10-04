@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 // Deterministic PRNG so server and client render the same skyline.
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   return () => {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
@@ -17,8 +17,8 @@ function mulberry32(seed: number) {
 type Building = { x: number; w: number; h: number; tone: number };
 type Win = { x: number; y: number; c: number };
 
-const W = 640;
-const H = 64;
+export const W = 640;
+export const H = 64;
 
 function buildSkyline() {
   const rnd = mulberry32(2026);
@@ -46,9 +46,9 @@ function buildSkyline() {
   return { buildings, windows };
 }
 
-const SKYLINE = buildSkyline();
-const TONES = ["#120e33", "#171141", "#0e0b2a"];
-const LIGHTS = ["#ffc98a", "#a98bff"];
+export const SKYLINE = buildSkyline();
+export const TONES = ["#120e33", "#171141", "#0e0b2a"];
+export const LIGHTS = ["#ffc98a", "#a98bff"];
 
 export function Background() {
   const reduce = useReducedMotion();

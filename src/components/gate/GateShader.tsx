@@ -54,8 +54,11 @@ void main(){
   gl_FragColor = vec4(col, 1.);
 }`;
 
-/** Full-screen WebGL backdrop. Renders at reduced resolution and stops when `active` is false. */
-export function GateShader({ active }: { active: boolean }) {
+/**
+ * Full-screen WebGL backdrop. Renders at reduced resolution and stops when `active` is false.
+ * With `still` (reduced motion) it draws a single frozen frame instead of animating.
+ */
+export function GateShader({ active, still = false }: { active: boolean; still?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   useEffect(() => {
@@ -65,7 +68,7 @@ export function GateShader({ active }: { active: boolean }) {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
+    const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power", preserveDrawingBuffer: still });
     if (!gl) return;
 
     const compile = (type: number, src: string) => {
@@ -94,17 +97,25 @@ export function GateShader({ active }: { active: boolean }) {
     const uEnergy = gl.getUniformLocation(prog, "u_energy");
 
     const SCALE = 0.5; // half resolution: the field is soft anyway
+    const FROZEN_AT = 31; // seconds into the flow, a nicely smoky moment
     let w = 0;
     let h = 0;
+    const draw = (seconds: number, mouseX: number, mouseY: number, energy: number) => {
+      gl.uniform2f(uRes, w, h);
+      gl.uniform1f(uTime, seconds);
+      gl.uniform2f(uMouse, mouseX, mouseY);
+      gl.uniform1f(uEnergy, energy);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
     const resize = () => {
       w = Math.max(2, Math.floor(window.innerWidth * SCALE));
       h = Math.max(2, Math.floor(window.innerHeight * SCALE));
       canvas.width = w;
       canvas.height = h;
       gl.viewport(0, 0, w, h);
+      if (still) draw(FROZEN_AT, w * 0.62, h * 0.5, 0.35);
     };
     resize();
-
     let mx = w / 2;
     let my = h / 2;
     let tx = mx;
@@ -126,23 +137,20 @@ export function GateShader({ active }: { active: boolean }) {
       my += (ty - my) * 0.08;
       energy += (targetEnergy - energy) * 0.05;
       targetEnergy *= 0.985;
-      gl.uniform2f(uRes, w, h);
-      gl.uniform1f(uTime, (now - start) / 1000);
-      gl.uniform2f(uMouse, mx, my);
-      gl.uniform1f(uEnergy, energy);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      draw(FROZEN_AT + (now - start) / 1000, mx, my, energy);
     };
-    raf = requestAnimationFrame(frame);
-
+    if (!still) {
+      raf = requestAnimationFrame(frame);
+      window.addEventListener("pointermove", onMove, { passive: true });
+    }
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onMove, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onMove);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, []);
+  }, [still]);
 
   return <canvas ref={ref} aria-hidden="true" className="gate-shader absolute inset-0 h-full w-full" />;
 }
