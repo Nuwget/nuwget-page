@@ -33,19 +33,20 @@ export function About({ c }: { c: Content }) {
 
         <div>
           <Stagger className="space-y-6" step={0.09}>
-            {about.paragraphs.map((p, i) => (
-              <StaggerItem key={i}>
-                <p
-                  className={
-                    i === 0
-                      ? "font-display text-3xl leading-[1.15] tracking-[-0.01em] text-ink sm:text-[2.6rem]"
-                      : "max-w-[62ch] text-[1.0625rem] leading-[1.8] text-muted"
-                  }
-                >
-                  {p}
-                </p>
-              </StaggerItem>
-            ))}
+            <StaggerItem>
+              <p className="font-display text-3xl leading-[1.15] tracking-[-0.01em] text-ink sm:text-[2.6rem]">
+                {about.paragraphs[0]}
+              </p>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="space-y-5">
+                {about.paragraphs.slice(1).map((p, i) => (
+                  <p key={i} className="max-w-[62ch] text-[1.0625rem] leading-[1.8] text-muted">
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </StaggerItem>
           </Stagger>
           <Stagger className="mt-10 flex flex-wrap gap-2" as="ul" step={0.035}>
             {about.tags.map((t) => (

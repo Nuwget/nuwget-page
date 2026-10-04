@@ -34,6 +34,7 @@ export function Experience({ c }: { c: Content }) {
                 aria-hidden="true"
                 className="absolute -left-[26px] top-2 h-2.5 w-2.5 rounded-full bg-lavender shadow-[0_0_16px_4px_rgb(139_109_240/0.8)] sm:-left-[54px] sm:h-3 sm:w-3"
               />
+              <div className="panel !p-6 sm:!p-8">
               <p className="eyebrow">
                 {role.type} · {role.period}
               </p>
@@ -64,6 +65,7 @@ export function Experience({ c }: { c: Content }) {
                   </span>
                 ))}
                 {role.moreSkills && <span className="text-sm text-faint">{role.moreSkills}</span>}
+              </div>
               </div>
             </Reveal>
           ))}

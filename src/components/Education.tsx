@@ -1,6 +1,5 @@
 import type { Content } from "@/content/types";
-import { GlowCard } from "./GlowCard";
-import { Reveal, Stagger, StaggerItem } from "./Reveal";
+import { Reveal } from "./Reveal";
 import { Section } from "./Section";
 
 export function Education({ c }: { c: Content }) {
@@ -14,7 +13,7 @@ export function Education({ c }: { c: Content }) {
       </Reveal>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2">
-        <Reveal>
+        <Reveal className="panel !p-6 sm:!p-7">
           <p className="mb-4 text-muted">{e.introList}</p>
           <ul className="space-y-3">
             {e.items.map((item) => (
@@ -34,7 +33,7 @@ export function Education({ c }: { c: Content }) {
           </div>
         </Reveal>
 
-        <Reveal delay={0.1}>
+        <Reveal delay={0.1} className="panel !p-6 sm:!p-7">
           <p className="eyebrow mb-4">{e.projectsLabel}</p>
           <ul className="grid gap-3 sm:grid-cols-2">
             {e.projects.map((p) => (
@@ -59,22 +58,29 @@ export function Education({ c }: { c: Content }) {
       <Reveal className="mb-8 mt-24">
         <h3 className="font-display text-4xl sm:text-5xl">{certificates.title}</h3>
       </Reveal>
-      <Stagger as="ul" step={0.05} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {certificates.list.map((cert, i) => (
-          <StaggerItem as="li" key={`${cert.name}-${i}`}>
-            <GlowCard className="h-full p-5" tilt={4}>
-              <p className="text-ink">{cert.name}</p>
-              <p className="mt-1 text-sm text-lavender">{cert.issuer}</p>
-              {cert.date && <p className="mt-3 text-sm text-faint">{cert.date}</p>}
-              {cert.credential && (
-                <p className="mt-3 break-all font-mono text-xs text-faint">
+      <Reveal>
+        <ul className="divide-y divide-line border-y border-line">
+          {certificates.list.map((cert, i) => (
+            <li
+              key={`${cert.name}-${i}`}
+              className="grid gap-x-8 gap-y-1 py-4 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.1fr)] sm:items-baseline"
+            >
+              <div>
+                <p className="text-ink">{cert.name}</p>
+                <p className="text-sm text-lavender">{cert.issuer}</p>
+              </div>
+              <p className="text-sm text-muted">{cert.date}</p>
+              {cert.credential ? (
+                <p className="break-all font-mono text-xs text-faint sm:text-right">
                   {ui.credential}: {cert.credential}
                 </p>
+              ) : (
+                <span />
               )}
-            </GlowCard>
-          </StaggerItem>
-        ))}
-      </Stagger>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
 
       <Reveal className="mt-10">
         <blockquote className="max-w-4xl border-l-2 border-violet pl-5 text-muted">
