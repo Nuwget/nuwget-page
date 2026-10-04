@@ -1,0 +1,449 @@
+import type { Content } from "./types";
+
+const LINKEDIN =
+  "https://www.linkedin.com/in/c%C3%A9sar-rodrigues-ribeiro-229b65282";
+const GITHUB = "https://github.com/nuwget";
+
+export const pt: Content = {
+  lang: "pt",
+  htmlLang: "pt-BR",
+  meta: {
+    title: "Nuwget · César Rodrigues Ribeiro",
+    description:
+      "Dev. FullStack | Desenvolvedor | FastAPI | Python | Node | React | React Native | Mobile | SQL | Firebase | Segurança Cibernética",
+  },
+  ui: {
+    skip: "Pular para o conteúdo",
+    nav: [
+      { id: "sobre", label: "Sobre" },
+      { id: "stack", label: "Stack" },
+      { id: "experiencia", label: "Experiência" },
+      { id: "projetos", label: "Projetos" },
+      { id: "contato", label: "Contato" },
+    ],
+    switchTo: { label: "EN", href: "/en/", aria: "Read this page in English" },
+    scrollHint: "Role",
+    showAll: "Ver todas",
+    hideAll: "Recolher",
+    credential: "Credencial",
+    expires: "expira",
+    projectLinksPending: "",
+    heroAlt:
+      "Dudu de fone de ouvido diante do notebook, com a Bubu dormindo no sofá ao fundo e a cidade iluminada pela lua na janela",
+    closingAlt:
+      "Dudu, um urso roxo em pixel art, programando de madrugada em um home office aconchegante",
+  },
+  hero: {
+    name: "Nuwget",
+    handle: "César Rodrigues Ribeiro",
+    headline: [
+      "Dev. FullStack",
+      "Desenvolvedor",
+      "FastAPI",
+      "Python",
+      "Node",
+      "React",
+      "React Native",
+      "Mobile",
+      "SQL",
+      "Firebase",
+      "Segurança Cibernética",
+    ],
+    location: "Praia Grande, São Paulo, Brasil",
+    school: "Faculdade de Tecnologia de Praia Grande (Fatec)",
+    profileLang: "Perfil em Português",
+    linkedin: LINKEDIN,
+    followers: "https://github.com/nuwget?tab=followers",
+    network: "Mais de 500 conexões e 2.376 seguidores no LinkedIn",
+  },
+  about: {
+    title: "Sobre",
+    intro:
+      "Sou o Dudu, um urso desenvolvedor que programa quando a cidade dorme, enquanto a Bubu descansa ao fundo.",
+    quote: "Trabalhando duro para dar o mundo à minha Bubu. 💜",
+    paragraphs: [
+      "Sou César Rodrigues Ribeiro, Desenvolvedor Full Stack, formado em Desenvolvimento de Software Multiplataforma pela FATEC Praia Grande.",
+      "Minha trajetória em tecnologia me levou a trabalhar com desenvolvimento Web, Mobile e APIs, passando por backend, frontend, bancos de dados, integrações, testes, segurança, CI/CD e observabilidade.",
+      "Tenho experiência principalmente com Python, FastAPI, Django, PostgreSQL, SQL, JavaScript, TypeScript, React e APIs REST, além de ferramentas e práticas como Docker, Git/GitHub, GitHub Actions, pytest, Playwright e Linux.",
+      "Ao longo das minhas experiências, também tive contato com problemas que vão além do código: regras de negócio complexas, investigação de causa-raiz, inconsistências de dados, integrações com APIs externas, webhooks, retries, idempotência, reconciliação, performance e sistemas em produção.",
+      "Venho aprofundando cada vez mais minha visão de engenharia de software, especialmente em arquitetura, qualidade, observabilidade e confiabilidade. Tenho experiência com ferramentas como Grafana, Prometheus, Loki, Tempo e Datadog, entendendo logs, métricas e traces não apenas como monitoramento, mas como ferramentas para investigar e compreender sistemas.",
+      "Hoje, busco continuar evoluindo como desenvolvedor, ampliando minha visão sobre arquitetura, sistemas, dados, observabilidade e produto, enquanto construo soluções que resolvam problemas reais.",
+    ],
+    tags: [
+      "Python",
+      "FastAPI",
+      "Django",
+      "PostgreSQL",
+      "SQL",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "REST APIs",
+      "Docker",
+      "Git",
+      "CI/CD",
+      "Testing",
+      "Observability",
+      "Software Architecture",
+    ],
+  },
+  manifesto: {
+    lead: "Também acredito que desenvolver software é muito mais do que escrever código.",
+    body: "Gosto de entender o problema antes de implementar, questionar decisões, pensar nos impactos de uma mudança, escrever testes e buscar soluções que continuem fazendo sentido depois que deixam de ser “código novo” e passam a fazer parte de um sistema real.",
+    ai: "Utilizo inteligência artificial como ferramenta de desenvolvimento, mantendo o controle sobre as decisões técnicas: contextualizo, questiono, reviso, testo e valido aquilo que é produzido.",
+    closing:
+      "Tecnologia é minha área. Engenharia de software é o caminho que estou construindo.",
+  },
+  availability: {
+    title: "Disponibilidade",
+    status:
+      "Buscando emprego · Praia Grande, SP · Presencial, híbrido ou remoto (preferência por home office).",
+    interestIntro:
+      "Interesse em oportunidades como Desenvolvedor de Software com:",
+    interests: [
+      { icon: "⚙️", text: "Arquitetura de software" },
+      { icon: "📈", text: "Escalonamento horizontal" },
+      {
+        icon: "🧩",
+        text: "Sistemas distribuídos e integração entre serviços",
+      },
+      { icon: "🚀", text: "Performance, confiabilidade e evolução de sistemas" },
+      { icon: "🧠", text: "Código limpo, manutenível e pensado para o longo prazo" },
+      { icon: "🔍", text: "Boas práticas de desenvolvimento e engenharia" },
+      { icon: "🏗️", text: "Soluções que realmente resolvem problemas de negócio" },
+    ],
+  },
+  stack: {
+    title: "Stack",
+    rows: [
+      {
+        area: "Principais competências",
+        items: ["Python", "Java", "SQL", "Git", "Node.js"],
+      },
+      {
+        area: "Linguagens",
+        items: ["Python", "JavaScript", "TypeScript", "SQL", "Java"],
+      },
+      {
+        area: "Backend",
+        items: ["FastAPI", "Django", "Node.js", "APIs REST", "Swagger API"],
+      },
+      {
+        area: "Frontend e Mobile",
+        items: ["React", "React Native", "HTML", "CSS", "Vite"],
+      },
+      { area: "Dados", items: ["PostgreSQL", "Redis", "Firebase"] },
+      { area: "Qualidade", items: ["pytest", "Playwright", "QA Engineering"] },
+      {
+        area: "Infra e DevOps",
+        items: ["Docker", "Git/GitHub", "GitHub Actions", "Linux", "Makefile"],
+      },
+      {
+        area: "Observabilidade",
+        items: ["Datadog", "Grafana", "Prometheus", "Loki", "Tempo"],
+      },
+      {
+        area: "Outros",
+        items: [
+          "Escalonamento de processos",
+          "Linear Programming",
+          "Análise de negócios",
+          "Arquitetura de sistema",
+          "Slack",
+        ],
+      },
+    ],
+    studying: "Estudando: Ruby e Ruby on Rails.",
+    rolesTitle: "Competências do cargo na Engenharia de Ecommerce (28)",
+    roleSkills: [
+      "Python",
+      "FastAPI",
+      "JavaScript",
+      "CSS",
+      "BackEnd",
+      "Desenvolvimento de back-end",
+      "Desenvolvimento de software",
+      "Desenvolvimento de front-end",
+      "Desenvolvimento full stack",
+      "Desenvolvimento web",
+      "Desenvolvimento Full-Stack",
+      "Banco de dados",
+      "PostgreSQL",
+      "Escalonamento de processos",
+      "Datadog",
+      "Swagger API",
+      "Análise de negócios",
+      "Arquitetura de sistema",
+      "Slack",
+      "SQL",
+      "Git",
+      "Tecnologia da informação",
+      "HTML",
+      "Vite",
+      "Makefile",
+      "Redis",
+      "Linear Programming",
+      "QA Engineering",
+    ],
+  },
+  services: {
+    title: "Serviços",
+    items: [
+      "Desenvolvimento de aplicativos",
+      "Desenvolvimento de banco de dados",
+      "Desenvolvimento web",
+      "Teste de software",
+      "Segurança da informação",
+      "Consultoria de TI",
+      "Cibersegurança",
+    ],
+  },
+  experience: {
+    title: "Experiência",
+    roles: [
+      {
+        title: "Desenvolvedor Full-Stack Jr.",
+        company: "Engenharia de Ecommerce",
+        type: "Tempo integral",
+        period: "jan. 2026 a ago. 2026 (8 meses)",
+        place: "Praia Grande, SP · No local",
+        summary:
+          "Atuei no desenvolvimento e evolução de uma plataforma de Business Intelligence voltada para e-commerce, trabalhando diretamente na construção de soluções para análise de vendas, estoque, catálogo, operação, indicadores e resultados financeiros. Durante esse período, tive contato com problemas reais de produto e negócio, atuando principalmente em:",
+        bullets: [
+          "Desenvolvimento e manutenção de regras de negócio complexas no backend;",
+          "Construção e evolução de APIs REST e integrações com serviços externos, incluindo marketplaces como o Mercado Livre;",
+          "Implementação de webhooks, eventos, retries, idempotência e mecanismos de recuperação de notificações;",
+          "Investigação e correção de divergências entre APIs, banco de dados e informações apresentadas ao usuário;",
+          "Desenvolvimento de rotinas de backfill, reconciliação e processamento de dados;",
+          "Trabalho com receita, margem, impostos, promoções, cupons, custos, fretes, estoque e vendas;",
+          "Criação e manutenção de migrations e testes automatizados, reduzindo riscos de regressão;",
+          "Refatoração de código visando legibilidade, organização, performance e manutenção;",
+          "Implementação e manutenção de recursos relacionados a autenticação, autorização/RBAC e rate limiting;",
+          "Participação em processos de code review, Git/GitHub, Pull Requests e CI/CD;",
+          "Desenvolvimento de interfaces e dashboards responsivos, trabalhando com JavaScript, HTML e CSS;",
+          "Investigação de problemas utilizando logs, métricas e traces, com ferramentas como Datadog, Grafana, Prometheus, Loki e Tempo.",
+        ],
+        skills: ["Python", "FastAPI"],
+        moreSkills: "e mais 26 competências",
+      },
+      {
+        title: "Desenvolvedor de Software (Estágio)",
+        company: "MundoFit",
+        type: "Meio período",
+        period: "jan. 2025 a jun. 2025 (6 meses)",
+        place: "São Vicente, SP · Remoto",
+        bullets: [
+          "Desenvolvimento do aplicativo mobile para gestão de alunos.",
+          "Telas de treino, nutrição, autenticação e integração com Firebase.",
+          "React Native no front-end e APIs REST em Node.js.",
+          "Gestão de Projeto de Software.",
+        ],
+        skills: ["CSS", "Atendimento ao cliente"],
+        moreSkills: "e mais 11 competências",
+      },
+    ],
+  },
+  education: {
+    title: "Formação",
+    school: "Faculdade de Tecnologia de Praia Grande (Fatec)",
+    degree: "Tecnólogo em Desenvolvimento de Software Multiplataforma",
+    period: "jan. 2023 a dez. 2025",
+    introList: "Presentes dentro da FATEC:",
+    items: [
+      "Sistemas utilizando Java, C#, Kotlin, Django, Python, HTML, CSS, SQL e noSQL;",
+      "Banco de Dados utilizando a linguagem SQL e NoSQL;",
+      "Codificação de sites básicos em HTML, CSS, React e XML;",
+      "FastAPI;",
+      "PSL;",
+      "Git e GitHub;",
+      "Metodologias ágeis (Scrum / Kanban) e desenvolvimento colaborativo.",
+    ],
+    skills: ["Tecnologia da informação", "Java"],
+    moreSkills: "e mais 22 competências",
+    projectsLabel: "Projetos da faculdade:",
+    projects: [
+      { name: "GradeDSMFATEC", href: "https://github.com/Verroxo/GradeDSMFATEC" },
+      { name: "LoginGothy", href: "https://github.com/Verroxo/LoginGothy" },
+      {
+        name: "calculadoracompleta",
+        href: "https://github.com/Verroxo/calculadoracompleta",
+      },
+      {
+        name: "geradoremailfatec",
+        href: "https://github.com/Verroxo/geradoremailfatec",
+      },
+    ],
+  },
+  certificates: {
+    title: "Licenças e certificados",
+    list: [
+      {
+        name: "Inteligência Artificial Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "e845f382-4542-4d5a-a58d-66262cfe404b",
+      },
+      {
+        name: "UX Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "a682c1f6-bdd5-44a0-86a9-8b6792aa7e83",
+      },
+      {
+        name: "Design Patterns Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "a2d4c7e2-a319-4afd-9589-a9d2d93b4444",
+      },
+      {
+        name: "DevOps Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "151924d7-48e9-474a-9cd4-681f0fe4e321",
+      },
+      {
+        name: "Computação em Nuvem Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "23915a8d-924a-40a8-b5e7-a8c64f836b43",
+      },
+      {
+        name: "Front-End Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2026",
+        credential: "843f992d-f93a-4ad7-bd89-17ae700bb524",
+      },
+      {
+        name: "Desenvolvedor para Dispositivos Móveis",
+        issuer: "Fatec",
+        date: "dez. 2025 (expira dez. 2036)",
+        credential: "0000014948",
+      },
+      {
+        name: "Desenvolvedor Back-End",
+        issuer: "Fatec",
+        date: "dez. 2025 (expira dez. 2036)",
+        credential: "0000004658",
+      },
+      {
+        name: "Certificação Intermediária, Desenvolvedor Back-End",
+        issuer: "Fatec / Centro Paula Souza",
+        date: null,
+        credential: null,
+      },
+      {
+        name: "Java Fundamentals",
+        issuer: "Oracle",
+        date: "fev. 2024",
+        credential: null,
+      },
+      {
+        name: "Front-End Básico",
+        issuer: "Centro Paula Souza",
+        date: "fev. 2024",
+        credential: "843f992d-f93a-4ad7-bd89-17ae700bb524",
+      },
+    ],
+    intermediateTitle: "Certificação Intermediária, Desenvolvedor Back-End",
+    intermediate:
+      "Qualificação tecnológica que valida competências em implantação de sistemas em diferentes infraestruturas (cloud, VPS, dedicado), modelagem e desenvolvimento de banco de dados, aplicação de metodologias de software e lógica de programação, além de gestão de projetos (escopo, custos, prazos e riscos) e visão empreendedora orientada a soluções em TI.",
+  },
+  projects: {
+    title: "Projetos",
+    list: [
+      {
+        name: "FlowGet",
+        tagline: "Gerenciador de tarefas reconstruído em Ruby on Rails",
+        description:
+          "Gerenciador de tarefas reconstruído em Ruby on Rails como laboratório de aprendizado.",
+        tech: ["Ruby on Rails", "PostgreSQL", "Docker"],
+        highlights: [
+          "Autenticação e autorização",
+          "Diferentes níveis de acesso",
+          "Isolamento das tarefas por usuário",
+          "Permissões por tarefa",
+          "Solicitações para assumir responsabilidades",
+          "Notificações",
+          "Histórico de atividades",
+          "Comentários e anexos",
+          "Kanban",
+          "Área administrativa",
+          "Testes de integração",
+        ],
+      },
+      {
+        name: "Cluwt",
+        tagline: "Projeto em destaque no LinkedIn",
+        description: "Projeto em destaque no LinkedIn (“Cluwt - Overview”, GitHub).",
+        tech: [],
+      },
+      {
+        name: "MundoFit",
+        tagline: "App mobile",
+        description: "App mobile com telas HomePage, LoginPage, Progresso e DashBoard, TreinoPage e TreinosProgramadosPage.",
+        tech: ["React Native", "Node.js", "Firebase"],
+        highlights: [
+          "HomePage",
+          "LoginPage",
+          "Progresso e DashBoard",
+          "TreinoPage",
+          "TreinosProgramadosPage",
+        ],
+      },
+    ],
+  },
+  publications: {
+    title: "Publicações no LinkedIn",
+    list: [
+      {
+        title: "Java 26 chegou",
+        text: "HTTP/3 no HttpClient, melhorias no G1 GC, `final` mais “final” via Reflection, fim dos Applets, AOT Object Caching, Structured Concurrency, Lazy Constants, Primitive Types em patterns, Vector API e APIs para objetos criptográficos em PEM.",
+      },
+      {
+        title: "FlowGet e a jornada em Ruby on Rails",
+        text: "Reconstruir um projeto antigo aplicando conceitos de arquitetura, segurança e organização de código.",
+      },
+      {
+        title: "Aberto a novas oportunidades",
+        text: "Foco em arquitetura, sistemas distribuídos, performance e código manutenível, sem “vibe coding”.",
+      },
+      {
+        title: "O que Cristiano Ronaldo me ensinou sobre ser Desenvolvedor de Software",
+        text: "Treinar, errar, ajustar, repetir, evoluir.",
+      },
+      {
+        title: "Humor dev",
+        text: "“Hoje vou dormir cedo” vs. 02:47 “só preciso descobrir por que funciona na minha máquina”. 🐈‍⬛💻",
+      },
+      {
+        title: "Code Slop existe",
+        text: "Código gerado por IA que parece solução mas só maquia o problema (fallbacks, wrappers, helpers e `try/except` sem causa resolvida).",
+      },
+      {
+        title: "Escrever código é a parte fácil",
+        text: "O desafio é entender o problema certo; software de qualidade impressiona pelo que deixa de complicar.",
+      },
+      {
+        title: "Seu agente de IA provavelmente escreve código demais",
+        text: "O Ponytail e a regra “antes de criar, procure; antes de duplicar, reutilize; antes de abstrair, simplifique”.",
+      },
+    ],
+  },
+  interests: {
+    title: "Interesses",
+    label: "Top Voices",
+    people: [
+      { name: "Elisa Terumi, PhD", role: "AI researcher and engineer" },
+      { name: "Alexandre Maioral", role: "Presidente Oracle Brasil" },
+    ],
+  },
+  contact: {
+    title: "Contato",
+    links: [
+      { label: "LinkedIn", href: LINKEDIN },
+      { label: "GitHub", href: GITHUB },
+    ],
+  },
+  footer:
+    "Dudu no código, Bubu no sofá. A madrugada é longa e o café ainda está quente.",
+};
