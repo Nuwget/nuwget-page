@@ -13,7 +13,62 @@ const EVENT = "bubu-poke";
 const STAGE_KEY = "nuwget-bubu-stage";
 const GOOGLE = "https://www.google.com/";
 const FAMILY_SRC = "/audio/family.mp3"; // the "oooo family" line
-const RAGE_SRC = "/audio/atatat.mp3"; // "atatat atatat atatata", looped while the modal is open
+const RAGE_SRC = "/audio/atatat.mp3"; // "atatat atatat atatata": once, then twice, then endless in the farewell
+
+let audioCtx: AudioContext | null = null;
+/** Created and resumed inside a user gesture, so the blast can fire later from a timer. */
+function primeAudio(): AudioContext | null {
+  const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return null;
+  audioCtx ??= new AC();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  return audioCtx;
+}
+
+/** POW: a noise burst sweeping down, a sub-bass thump and a sharp crack, synthesised on the spot. */
+function playBoom() {
+  const ctx = primeAudio();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  const len = Math.floor(ctx.sampleRate * 1.5);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(6000, t);
+  lp.frequency.exponentialRampToValueAtTime(110, t + 1.2);
+  const ng = ctx.createGain();
+  ng.gain.setValueAtTime(0.9, t);
+  ng.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+  noise.connect(lp).connect(ng).connect(ctx.destination);
+  noise.start(t);
+
+  const thump = ctx.createOscillator();
+  thump.type = "sine";
+  thump.frequency.setValueAtTime(170, t);
+  thump.frequency.exponentialRampToValueAtTime(36, t + 0.55);
+  const tg = ctx.createGain();
+  tg.gain.setValueAtTime(1, t);
+  tg.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+  thump.connect(tg).connect(ctx.destination);
+  thump.start(t);
+  thump.stop(t + 0.85);
+
+  const crack = ctx.createOscillator();
+  crack.type = "square";
+  crack.frequency.setValueAtTime(1100, t);
+  crack.frequency.exponentialRampToValueAtTime(90, t + 0.14);
+  const cg = ctx.createGain();
+  cg.gain.setValueAtTime(0.32, t);
+  cg.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  crack.connect(cg).connect(ctx.destination);
+  crack.start(t);
+  crack.stop(t + 0.18);
+}
 
 /** Invisible hit area over Bubu's head and nose. Click or tap pokes her. */
 export function PokeBubu({
@@ -254,6 +309,8 @@ export function BubuEgg({ c }: { c: Content }) {
   const familyRef = useRef<HTMLAudioElement | null>(null);
   const rageRef = useRef<HTMLAudioElement | null>(null);
   const soundOn = useRef(false);
+  const rageEndless = useRef(false);
+  const ragePlays = useRef(0);
 
   // Load both lines ahead of time so they start instantly on the tap.
   useEffect(() => {
@@ -262,7 +319,6 @@ export function BubuEgg({ c }: { c: Content }) {
     family.volume = 0.9;
     const rage = new Audio(asset(RAGE_SRC));
     rage.preload = "auto";
-    rage.loop = true;
     rage.volume = 0.85;
     familyRef.current = family;
     rageRef.current = rage;
@@ -274,32 +330,57 @@ export function BubuEgg({ c }: { c: Content }) {
     };
   }, []);
 
-  /** "oooo family", then "atatat atatat atatata" on repeat until the modal closes. */
-  const playFamily = useCallback(() => {
-    const family = familyRef.current;
+  const playRage = useCallback(() => {
     const rage = rageRef.current;
-    if (!family || !rage) return;
-    soundOn.current = true;
-    rage.pause();
-    family.onended = () => {
-      if (!soundOn.current) return;
-      rage.currentTime = 0;
-      rage.play().catch(() => {});
-    };
-    family.currentTime = 0;
-    family.play().catch(() => {
-      /* autoplay blocked or no audio device: the animation carries on without sound */
-    });
+    if (!rage || !soundOn.current) return;
+    rage.currentTime = 0;
+    rage.play().catch(() => {});
   }, []);
 
   const stopFamily = useCallback(() => {
     soundOn.current = false;
+    rageEndless.current = false;
     if (familyRef.current) {
       familyRef.current.onended = null;
       familyRef.current.pause();
     }
-    rageRef.current?.pause();
+    if (rageRef.current) {
+      rageRef.current.onended = null;
+      rageRef.current.pause();
+    }
   }, []);
+
+  /** "oooo family", then "atatat atatat atatata" `times` times (1 on the first poke, 2 on the second). */
+  const playFamily = useCallback((times: number) => {
+    const family = familyRef.current;
+    const rage = rageRef.current;
+    if (!family || !rage) return;
+    stopFamily();
+    soundOn.current = true;
+    ragePlays.current = 0;
+    rage.onended = () => {
+      ragePlays.current += 1;
+      if (ragePlays.current < times) playRage();
+    };
+    family.onended = playRage;
+    family.currentTime = 0;
+    family.play().catch(() => {
+      /* autoplay blocked or no audio device: the animation carries on without sound */
+    });
+  }, [playRage, stopFamily]);
+
+  /** The farewell: the scream never stops until the blast. */
+  const playRageForever = useCallback(() => {
+    const rage = rageRef.current;
+    if (!rage) return;
+    stopFamily();
+    soundOn.current = true;
+    rageEndless.current = true;
+    rage.onended = () => {
+      if (rageEndless.current) playRage();
+    };
+    playRage();
+  }, [playRage, stopFamily]);
 
   // Restore the mood after a reload inside the same session.
   useEffect(() => {
@@ -324,15 +405,17 @@ export function BubuEgg({ c }: { c: Content }) {
 
   const cancelFarewell = useCallback(() => {
     stopDoom();
+    stopFamily();
     setFarewell(null);
     writeStage(3); // forgiven once: the next poke is the last
     applyMood(3);
     showToast("forgiven");
-  }, [showToast, stopDoom]);
+  }, [showToast, stopDoom, stopFamily]);
 
   const startFarewell = useCallback((final: boolean) => {
     opener.current = document.activeElement;
-    stopFamily();
+    primeAudio();
+    playRageForever();
     const root = document.documentElement;
     const doom = (v: number) => {
       if (reduce) return;
@@ -355,6 +438,8 @@ export function BubuEgg({ c }: { c: Content }) {
       doom(2.8);
     });
     at(5600, () => {
+      stopFamily();
+      playBoom();
       setFarewell({ phase: "boom", n: 0, final });
       doom(4);
     });
@@ -364,7 +449,7 @@ export function BubuEgg({ c }: { c: Content }) {
       applyMood(0);
       window.location.assign(GOOGLE);
     });
-  }, [reduce, stopDoom, stopFamily]);
+  }, [reduce, stopDoom, stopFamily, playRageForever]);
 
   const onPoke = useCallback(() => {
     if (scene || farewell) return;
@@ -373,11 +458,11 @@ export function BubuEgg({ c }: { c: Content }) {
     if (stage === 0) {
       setScene("wake");
       showToast("wake", 700);
-      playFamily();
+      playFamily(1);
     } else if (stage === 1) {
       setScene("warn");
       showToast("warn", 700);
-      playFamily();
+      playFamily(2);
     } else {
       startFarewell(stage >= 3);
     }
