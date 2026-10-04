@@ -1,5 +1,9 @@
 name: Deploy to GitHub Pages
 
+# Publishes both versions side by side:
+#   /      -> v2 (main)
+#   /v1/   -> v1 (tag v1.0.0)
+
 on:
   push:
     branches: [main]
@@ -14,26 +18,49 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  V1_TAG: v1.0.0
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
       - id: pages
         uses: actions/configure-pages@v5
-      - run: npm run build
+
+      - name: Build v2 (root)
+        run: |
+          npm ci
+          npm run build
+          mkdir site
+          cp -r out/. site/
         env:
           # Empty for a user site (<user>.github.io); "/<repo>" for a project site.
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.origin }}
+
+      - name: Build v1 (/v1)
+        run: |
+          git worktree add ../v1 "$V1_TAG"
+          cd ../v1
+          npm ci
+          npm run build
+          mkdir -p "$GITHUB_WORKSPACE/site/v1"
+          cp -r out/. "$GITHUB_WORKSPACE/site/v1/"
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}/v1
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.origin }}
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: out
+          path: site
 
   deploy:
     needs: build
