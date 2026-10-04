@@ -7,8 +7,35 @@ import { asset } from "@/lib/asset";
 import { SCENE, place } from "@/lib/scene";
 import { Bubu } from "./Bubu";
 import { PokeBubu } from "./BubuEgg";
+import { useGate } from "./gate/LanguageGate";
 import { Dudu } from "./Dudu";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+/** One line of type revealed from below through a mask (no blur filter). */
+function Line({
+  children,
+  delay,
+  reduce,
+  ready,
+}: {
+  children: React.ReactNode;
+  delay: number;
+  reduce: boolean;
+  ready: boolean;
+}) {
+  return (
+    <span className="-mb-[0.16em] block overflow-hidden pb-[0.16em]">
+      <motion.span
+        className="block"
+        initial={reduce ? false : { y: "108%" }}
+        animate={{ y: ready ? 0 : "108%" }}
+        transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  );
+}
 
 const BASE = asset(SCENE.src.full);
 const BASE_SET = `${asset(SCENE.src.small)} 1000w, ${asset(SCENE.src.full)} 1600w`;
@@ -19,6 +46,7 @@ export function Hero({ c }: { c: Content }) {
   const duduRef = useRef<HTMLDivElement>(null);
   const bubuRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const { ready } = useGate();
   const { hero, ui } = c;
 
   const { scrollYProgress } = useScroll({
@@ -89,7 +117,7 @@ export function Hero({ c }: { c: Content }) {
       ? {}
       : {
           initial: { opacity: 0, y: 28 },
-          animate: { opacity: 1, y: 0 },
+          animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 },
           transition: { duration: 1, delay, ease: [0.22, 1, 0.36, 1] as const },
         };
 
@@ -178,7 +206,7 @@ export function Hero({ c }: { c: Content }) {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, #06051a 0%, rgb(6 5 26 / 0.82) 20%, rgb(6 5 26 / 0.5) 34%, rgb(6 5 26 / 0.1) 50%, transparent 64%), linear-gradient(to bottom, rgb(6 5 26 / 0.65), transparent 18%)",
+              "linear-gradient(to top, #06051a 0%, rgb(6 5 26 / 0.84) 14%, rgb(6 5 26 / 0.5) 27%, rgb(6 5 26 / 0.1) 42%, transparent 54%), linear-gradient(to bottom, rgb(6 5 26 / 0.65), transparent 18%)",
           }}
         />
 
@@ -188,66 +216,81 @@ export function Hero({ c }: { c: Content }) {
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[#06051a]"
             initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+            animate={{ opacity: ready ? 0 : 1 }}
+            transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
           />
         )}
       </motion.div>
 
       <motion.div
-        className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 sm:px-6 sm:pb-14"
+        className="pointer-events-none relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-5 sm:px-6 sm:pb-7"
         style={reduce ? undefined : { y: textY, opacity: textOpacity }}
       >
-        <motion.h1
-          className="font-display text-[clamp(3.8rem,10.5vw,8rem)] leading-[0.85] tracking-tight text-ink"
-          {...fade(1.0)}
-        >
-          {hero.name}
-        </motion.h1>
-        <motion.p className="mt-2 font-display text-2xl italic text-lavender sm:text-3xl" {...fade(1.15)}>
-          {hero.handle}
-        </motion.p>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+          <div>
+            <h1 className="font-display leading-[0.86] tracking-[-0.025em]">
+              <Line delay={0.35} reduce={reduce} ready={ready}>
+                <span className="bg-gradient-to-b from-white via-[#f1ecff] to-[#b9a6ff] bg-clip-text text-[clamp(4rem,9vw,7rem)] text-transparent">
+                  {hero.name}
+                </span>
+              </Line>
+            </h1>
+            <p className="mt-1 font-display text-2xl italic text-lavender sm:text-[1.75rem]">
+              <Line delay={0.5} reduce={reduce} ready={ready}>
+                {hero.handle}
+              </Line>
+            </p>
+
+            <motion.ul
+              className="mt-4 flex max-w-[46rem] flex-wrap font-mono text-[0.68rem] leading-[1.9] text-muted sm:text-xs"
+              aria-label="Headline"
+              {...fade(0.7)}
+            >
+              {hero.headline.map((h, i) => (
+                <li key={h} className="whitespace-nowrap">
+                  {h}
+                  {i < hero.headline.length - 1 && (
+                    <span aria-hidden="true" className="mx-2 text-violet/70">
+                      |
+                    </span>
+                  )}
+                </li>
+              ))}
+            </motion.ul>
+          </div>
+
+          <motion.div
+            className="pointer-events-auto flex flex-col items-start gap-3 lg:items-end"
+            {...fade(0.85)}
+          >
+            <div className="flex flex-wrap gap-2.5">
+              <a
+                href={hero.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-solid !px-5 !py-2.5"
+              >
+                LinkedIn
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a href={hero.followers} target="_blank" rel="noopener noreferrer" className="btn !px-5 !py-2.5">
+                GitHub
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+            <p className="text-xs text-faint lg:text-right">{hero.network}</p>
+          </motion.div>
+        </div>
 
         <motion.ul
-          className="mt-4 flex max-w-3xl flex-wrap font-mono text-[0.72rem] leading-relaxed text-muted sm:text-[0.82rem]"
-          aria-label="Headline"
-          {...fade(1.3)}
+          className="mt-5 flex flex-wrap gap-x-6 gap-y-1 border-t border-transparent pt-3 font-pixel text-[0.66rem] uppercase tracking-[0.2em] text-faint sm:mt-6 sm:text-[0.7rem]"
+          style={{ borderImage: "linear-gradient(90deg, rgb(201 184 255 / 0.4), transparent 70%) 1" }}
+          {...fade(1)}
         >
-          {hero.headline.map((h, i) => (
-            <li key={h} className="whitespace-nowrap">
-              {h}
-              {i < hero.headline.length - 1 && (
-                <span aria-hidden="true" className="mx-2 text-violet">
-                  |
-                </span>
-              )}
-            </li>
-          ))}
+          <li>{hero.location}</li>
+          <li>{hero.school}</li>
+          <li>{hero.profileLang}</li>
         </motion.ul>
-
-        <motion.div
-          className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
-          {...fade(1.45)}
-        >
-          <div className="space-y-1 text-sm text-muted">
-            <p className="flex flex-wrap gap-x-4 gap-y-1">
-              <span>📍 {hero.location}</span>
-              <span>🎓 {hero.school}</span>
-              <span>🌐 {hero.profileLang}</span>
-            </p>
-            <p className="text-xs text-faint">{hero.network}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <a href={hero.linkedin} target="_blank" rel="noopener noreferrer" className="btn btn-solid">
-              LinkedIn
-              <span aria-hidden="true">↗</span>
-            </a>
-            <a href={hero.followers} target="_blank" rel="noopener noreferrer" className="btn">
-              GitHub
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </motion.div>
       </motion.div>
     </section>
   );
