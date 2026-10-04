@@ -5,7 +5,7 @@
   --bg-1: #0c0a2a;
   --bg-2: #171039;
   --ink: #eeeaff;
-  --muted: #b3acdf;
+  --muted: #c6c0f0;
   --faint: #8780b8;
   --violet: #8b6df0;
   --lavender: #c9b8ff;
@@ -159,6 +159,15 @@ body {
   transform: translateY(-50%);
 }
 
+/* Portrait: frame Dudu's face in the upper part of the screen, clear of the type. */
+@media (max-aspect-ratio: 4/5) {
+  .scene {
+    --w: max(100vw, calc(100svh * 1.77));
+    top: -21svh;
+    transform: none;
+  }
+}
+
 .layer {
   will-change: transform;
 }
@@ -284,4 +293,300 @@ body {
 }
 .glow-card:hover::before {
   opacity: 1;
+}
+
+/* ---------- Language gate ---------- */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 70% 0%, #1b1050, #08061f 60%, #04031a);
+}
+.gate-ui {
+  position: absolute;
+  inset: 0;
+}
+.gate-veil {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 60% at 50% 40%, rgb(168 139 255 / 0.55), transparent 70%),
+    radial-gradient(120% 90% at 50% 120%, #e879c8 -10%, transparent 55%),
+    linear-gradient(160deg, #5b2fe0, #2a1170 55%, #0d0730);
+}
+/* Arriving from the other language: only the veil, then it dissolves. */
+html[data-gate="reveal"] .gate-ui {
+  display: none;
+}
+html[data-gate="reveal"] .gate-veil {
+  opacity: 1;
+}
+.gate-shader {
+  opacity: 0.95;
+}
+
+.gate-choice {
+  --sx: 50%;
+  --sy: 50%;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "tag arrow" "word word" "sub sub";
+  align-items: center;
+  width: 100%;
+  padding: 1.1rem 0.75rem 1.2rem 0.25rem;
+  text-align: left;
+  color: var(--ink);
+  border-top: 1px solid rgb(201 184 255 / 0.18);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+}
+.gate-choice:last-child {
+  border-bottom: 1px solid rgb(201 184 255 / 0.18);
+}
+.gate-choice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(520px circle at var(--sx) var(--sy), rgb(139 109 240 / 0.32), transparent 62%);
+}
+.gate-choice:hover::before,
+.gate-choice:focus-visible::before {
+  opacity: 1;
+}
+.gate-tag {
+  grid-area: tag;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--f-pixel), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--lavender);
+}
+.gate-tag i {
+  width: 6px;
+  height: 6px;
+  background: var(--warm);
+  box-shadow: 0 0 10px 2px rgb(255 201 138 / 0.7);
+}
+.gate-word {
+  grid-area: word;
+  font-family: var(--f-display), serif;
+  font-size: clamp(3.6rem, 13vw, 9.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+}
+.gate-letter {
+  display: inline-block;
+  color: rgb(238 234 255 / 0.9);
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.4s ease;
+}
+.gate-choice:hover .gate-letter,
+.gate-choice:focus-visible .gate-letter {
+  transform: translateY(-6%);
+  color: #fff;
+}
+.gate-sub {
+  grid-area: sub;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--faint);
+}
+.gate-arrow {
+  grid-area: arrow;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid rgb(201 184 255 / 0.3);
+  border-radius: 999px;
+  color: var(--lavender);
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease;
+}
+.gate-choice:hover .gate-arrow,
+.gate-choice:focus-visible .gate-arrow {
+  transform: translateX(6px) rotate(-45deg);
+  background: rgb(139 109 240 / 0.35);
+}
+.gate-choice:focus-visible {
+  outline: none;
+}
+
+.gate-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 0.5em;
+  vertical-align: -0.15em;
+  background: var(--warm);
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+.gate-z {
+  animation: z-float 3.2s ease-in-out infinite;
+}
+@keyframes z-float {
+  0%, 100% {
+    transform: translateY(2px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+/* ---------- Angry Bubu and Dudu ---------- */
+.angry-only {
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-bubu="angry"] .bubu-angry,
+[data-angry="true"] .bubu-angry,
+html[data-dudu="angry"] .dudu-angry,
+[data-angry="true"] .dudu-angry {
+  opacity: 1;
+  animation: angry-pop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes angry-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.vein {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: vein-pulse 0.9s steps(2, end) infinite;
+}
+@keyframes vein-pulse {
+  50% {
+    transform: scale(1.3) rotate(8deg);
+  }
+}
+.puff {
+  position: absolute;
+  width: 9%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.85), rgb(220 205 255 / 0.4) 60%, transparent 72%);
+  opacity: 0;
+}
+html[data-bubu="angry"] .puff,
+[data-angry="true"] .puff {
+  animation: puff 1.9s ease-out infinite;
+}
+@keyframes puff {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  25% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-14px, -42px) scale(1.7);
+  }
+}
+/* She huffs: faster breathing, and a tremble right after the apology. */
+html[data-bubu="angry"] .anim-breathe-slow {
+  animation-duration: 1.5s;
+}
+html[data-bubu="angry"] .bubu-tremble {
+  animation: tremble 1.8s ease-out both;
+}
+@keyframes tremble {
+  0%, 100% {
+    transform: rotate(0) translateX(0);
+  }
+  8% { transform: rotate(-2.4deg) translateX(-2px); }
+  16% { transform: rotate(2.2deg) translateX(2px); }
+  24% { transform: rotate(-1.8deg) translateX(-1.5px); }
+  32% { transform: rotate(1.6deg) translateX(1.5px); }
+  44% { transform: rotate(-1deg); }
+  56% { transform: rotate(0.8deg); }
+  70% { transform: rotate(-0.4deg); }
+}
+/* Dudu shakes his head "no" once he is angry too. */
+html[data-dudu="angry"] .anim-idle {
+  animation: idle-angry 6s ease-in-out infinite;
+}
+@keyframes idle-angry {
+  0%, 100% { transform: rotate(-0.22deg) scale(1); }
+  8% { transform: rotate(-1.6deg) scale(1.006); }
+  14% { transform: rotate(1.4deg) scale(1.006); }
+  20% { transform: rotate(-1deg) scale(1.004); }
+  26% { transform: rotate(0.6deg) scale(1.002); }
+  50% { transform: rotate(0.28deg) scale(1.011) translateY(-0.18%); }
+}
+@keyframes mood-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  20% { transform: translate(-3px, 1px) rotate(-0.6deg); }
+  40% { transform: translate(3px, -2px) rotate(0.5deg); }
+  60% { transform: translate(-2px, 2px) rotate(-0.4deg); }
+  80% { transform: translate(2px, -1px) rotate(0.4deg); }
+}
+.mood-shake {
+  animation: mood-shake 0.38s linear infinite;
+}
+
+/* Self-destruct */
+html[data-doom] #page-root {
+  animation: doom 0.14s steps(2, end) infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes doom {
+  0% { transform: translate(calc(var(--doom, 1) * -3px), calc(var(--doom, 1) * 2px)) rotate(calc(var(--doom, 1) * -0.25deg)); }
+  50% { transform: translate(calc(var(--doom, 1) * 4px), calc(var(--doom, 1) * -3px)) rotate(calc(var(--doom, 1) * 0.3deg)); }
+  100% { transform: translate(calc(var(--doom, 1) * -2px), calc(var(--doom, 1) * -2px)) rotate(0); }
+}
+.scanlines {
+  background: repeating-linear-gradient(to bottom, rgb(255 80 120 / 0.1) 0, rgb(255 80 120 / 0.1) 2px, transparent 2px, transparent 5px);
+}
+
+.huff {
+  position: absolute;
+  left: -6%;
+  top: -30%;
+  padding: 0.25em 0.6em;
+  font-family: var(--f-pixel), monospace;
+  font-size: clamp(0.6rem, 1.3vw, 0.9rem);
+  letter-spacing: 0.12em;
+  color: #2b1247;
+  background: #fff;
+  border-radius: 0.6em 0.6em 0.6em 0;
+  white-space: nowrap;
+  opacity: 0;
+}
+html[data-bubu="angry"] .huff,
+[data-angry="true"] .huff {
+  animation: huff 3.4s ease-out 0.4s both;
+}
+@keyframes huff {
+  0% { opacity: 0; transform: translateY(8px) scale(0.6); }
+  12% { opacity: 1; transform: translateY(0) scale(1.1); }
+  20% { transform: scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-6px); }
 }

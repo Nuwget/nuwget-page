@@ -6,6 +6,7 @@ import { Contact } from "./Contact";
 import { Education } from "./Education";
 import { Experience } from "./Experience";
 import { Footer } from "./Footer";
+import { GateProvider } from "./gate/LanguageGate";
 import { Hero } from "./Hero";
 import { Manifesto } from "./Manifesto";
 import { Nav } from "./Nav";
@@ -15,7 +16,7 @@ import { Skills } from "./Skills";
 
 export function Page({ c }: { c: Content }) {
   return (
-    <>
+    <GateProvider lang={c.lang}>
       <Nav c={c} />
       <main id="conteudo">
         <Hero c={c} />
@@ -31,6 +32,6 @@ export function Page({ c }: { c: Content }) {
       </main>
       <Footer c={c} />
       <BubuEgg c={c} />
-    </>
+    </GateProvider>
   );
 }

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import type { Content } from "@/content/types";
 import { DuduAvatar } from "./DuduAvatar";
+import { GATE_KEY, useGate } from "./gate/LanguageGate";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export function Nav({ c }: { c: Content }) {
@@ -12,6 +13,7 @@ export function Nav({ c }: { c: Content }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
   const reduce = useReducedMotion();
+  const { ready } = useGate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -37,8 +39,8 @@ export function Nav({ c }: { c: Content }) {
   return (
     <motion.header
       initial={reduce ? false : { y: -30, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.9, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      animate={ready ? { y: 0, opacity: 1 } : { y: -30, opacity: 0 }}
+      transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-x-0 top-0 z-50"
     >
       <a
@@ -79,6 +81,13 @@ export function Nav({ c }: { c: Content }) {
             href={c.ui.switchTo.href}
             hrefLang={c.lang === "pt" ? "en" : "pt-BR"}
             aria-label={c.ui.switchTo.aria}
+            onClick={() => {
+              try {
+                sessionStorage.setItem(GATE_KEY, "reveal");
+              } catch {
+                /* ignore */
+              }
+            }}
             className="rounded-full border border-line px-3 py-1.5 font-pixel text-xs tracking-widest text-lavender transition hover:border-lavender/60 hover:bg-violet/15"
           >
             {c.ui.switchTo.label}

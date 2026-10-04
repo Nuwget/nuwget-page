@@ -27,7 +27,20 @@ export function Document({
     <html
       lang={lang === "pt" ? "pt-BR" : "en"}
       className={`${sans.variable} ${mono.variable} ${display.variable} ${pixel.variable}`}
+      suppressHydrationWarning
     >
+      {/* eslint-disable-next-line @next/next/no-head-element */}
+      <head>
+        {/* Decide before first paint whether to show the language gate or the reveal veil. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var g=sessionStorage.getItem("nuwget-gate");document.documentElement.dataset.gate=g==="reveal"?"reveal":"show";sessionStorage.removeItem("nuwget-gate")}catch(e){document.documentElement.dataset.gate="show"}`,
+          }}
+        />
+        <noscript>
+          <style>{`.gate{display:none!important}`}</style>
+        </noscript>
+      </head>
       <body>
         <Background />
         <AmbientEffects />
