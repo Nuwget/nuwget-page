@@ -178,8 +178,10 @@ const pct = ({ left, top, width, height }) => ({
 console.log(JSON.stringify(Object.fromEntries(Object.entries(boxes).map(([k, v]) => [k, pct(v)])), null, 2));
 
 // ---------------------------------------------------------------------------
-// Angry Bubu: fur patches over her sleeping eyes and mouth, then angry eyes,
-// brows, a pout and puffed cheeks drawn on top. Same box as the bubu sprite.
+// Angry Bubu. Her sleeping eyes and mouth are painted over with fur that is
+// interpolated from the clean fur around them (so no outline or rim light is
+// copied in), everything is clipped to her head, then angry eyes, brows, a pout
+// and puffed cheeks go on top. Same box as the bubu sprite.
 // ---------------------------------------------------------------------------
 {
   const L = Math.floor(px(BUBU.cx - BUBU.rx, W));
@@ -191,48 +193,127 @@ console.log(JSON.stringify(Object.fromEntries(Object.entries(boxes).map(([k, v])
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
-  const out = Buffer.alloc(BW * BH * 4); // transparent
+  const luma = (i) => 0.299 * src[i * 4] + 0.587 * src[i * 4 + 1] + 0.114 * src[i * 4 + 2];
 
-  // Sleeping eyes and mouth, in sprite pixels. dy: where to borrow fur from.
+  // Head silhouette: flood fill over fur-bright pixels from a point on her forehead,
+  // then a morphological closing so the sleeping eyes (dark notches) are inside it.
+  const FUR = 115;
+  let head = new Uint8Array(BW * BH);
+  {
+    const stack = [[108, 80]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      if (x < 0 || y < 0 || x >= BW || y >= BH) continue;
+      const i = y * BW + x;
+      if (head[i] || luma(i) < FUR) continue;
+      head[i] = 1;
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+  }
+  const morph = (m, r, pick) => {
+    const pass = (inp, horizontal) => {
+      const out = new Uint8Array(BW * BH);
+      for (let y = 0; y < BH; y++) {
+        for (let x = 0; x < BW; x++) {
+          let v = pick === "max" ? 0 : 1;
+          for (let k = -r; k <= r; k++) {
+            const xx = horizontal ? x + k : x;
+            const yy = horizontal ? y : y + k;
+            const t = xx < 0 || yy < 0 || xx >= BW || yy >= BH ? 0 : inp[yy * BW + xx];
+            v = pick === "max" ? Math.max(v, t) : Math.min(v, t);
+          }
+          out[y * BW + x] = v;
+        }
+      }
+      return out;
+    };
+    return pass(pass(m, true), false);
+  };
+  head = morph(morph(head, 14, "max"), 14, "min"); // closing
+  const inner = morph(head, 6, "min"); // fur safely away from the rim
+  // soft version of the silhouette for feathering
+  const soft = new Float32Array(BW * BH);
+  for (let y = 0; y < BH; y++) {
+    for (let x = 0; x < BW; x++) {
+      let s = 0;
+      let n = 0;
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const xx = x + dx;
+          const yy = y + dy;
+          s += xx < 0 || yy < 0 || xx >= BW || yy >= BH ? 0 : head[yy * BW + xx];
+          n++;
+        }
+      }
+      soft[y * BW + x] = s / n;
+    }
+  }
+
+  const out = Buffer.alloc(BW * BH * 4); // transparent
+  const over = (i, rgb, a) => {
+    const a0 = out[i + 3] / 255;
+    const ao = a + a0 * (1 - a);
+    if (ao <= 0) return;
+    for (let c = 0; c < 3; c++) out[i + c] = Math.round((rgb[c] * a + out[i + c] * a0 * (1 - a)) / ao);
+    out[i + 3] = Math.round(ao * 255);
+  };
+
+  // Sleeping eyes and mouth, in sprite pixels.
   const patches = [
-    { cx: 79, cy: 94, rx: 19, ry: 16, dy: 26 },
-    { cx: 138, cy: 118, rx: 19, ry: 16, dy: 28 },
-    { cx: 102, cy: 111, rx: 13, ry: 8, dy: 22 },
+    { cx: 79, cy: 94, rx: 25, ry: 21 },
+    { cx: 138, cy: 118, rx: 25, ry: 21 },
+    { cx: 102, cy: 111, rx: 21, ry: 12 },
   ];
   for (const pt of patches) {
-    // colour-match to the fur around the patch
-    const ring = [[], [], []];
-    const core = [[], [], []];
-    for (let y = 0; y < BH; y++) {
-      for (let x = 0; x < BW; x++) {
+    // clean fur samples just outside the patch, inside the head and clear of the rim
+    const pts = [];
+    for (let y = 0; y < BH; y += 2) {
+      for (let x = 0; x < BW; x += 2) {
+        const i = y * BW + x;
         const d = Math.hypot((x - pt.cx) / pt.rx, (y - pt.cy) / pt.ry);
-        const sy = y - pt.dy;
-        if (d >= 1.2 && d <= 1.6) for (let c = 0; c < 3; c++) ring[c].push(src[(y * BW + x) * 4 + c]);
-        if (d < 0.6 && sy >= 0) for (let c = 0; c < 3; c++) core[c].push(src[(sy * BW + x) * 4 + c]);
+        if (d >= 1.05 && d <= 1.7 && inner[i] && luma(i) >= 135) pts.push([x, y, src[i * 4], src[i * 4 + 1], src[i * 4 + 2]]);
       }
     }
-    const med = (a) => a.sort((m, n) => m - n)[Math.floor(a.length / 2)];
-    const gain = [0, 1, 2].map((c) => med(ring[c]) / Math.max(1, med(core[c])));
+    if (!pts.length) continue;
     for (let y = 0; y < BH; y++) {
       for (let x = 0; x < BW; x++) {
         const d = Math.hypot((x - pt.cx) / pt.rx, (y - pt.cy) / pt.ry);
-        const a = falloff(d, 0.72);
-        const sy = y - pt.dy;
-        if (a <= 0 || sy < 0) continue;
-        const i = (y * BW + x) * 4;
-        if (a * 255 > out[i + 3]) {
-          for (let c = 0; c < 3; c++) out[i + c] = Math.min(255, Math.round(src[(sy * BW + x) * 4 + c] * gain[c]));
-          out[i + 3] = Math.round(a * 255);
+        if (d >= 1) continue;
+        // keep the original blush: pink pixels are not painted over
+        const si = (y * BW + x) * 4;
+        const pink = Math.min(1, Math.max(0, (src[si] - src[si + 1] - 35) / 40));
+        const a = falloff(d, 0.82) * soft[y * BW + x] * (1 - pink);
+        if (a <= 0) continue;
+        let wsum = 0;
+        const rgb = [0, 0, 0];
+        for (const q of pts) {
+          const w = 1 / ((x - q[0]) ** 2 + (y - q[1]) ** 2 + 1);
+          wsum += w;
+          for (let c = 0; c < 3; c++) rgb[c] += q[2 + c] * w;
         }
+        over((y * BW + x) * 4, rgb.map((v) => v / wsum), a);
+      }
+    }
+  }
+
+  // Puffed cheeks, clipped to the head so no pink spills onto the blanket.
+  const cheeks = [
+    { cx: 61, cy: 102, rx: 21, ry: 17 },
+    { cx: 146, cy: 139, rx: 23, ry: 18 },
+  ];
+  for (const ch of cheeks) {
+    for (let y = 0; y < BH; y++) {
+      for (let x = 0; x < BW; x++) {
+        const d = Math.hypot((x - ch.cx) / ch.rx, (y - ch.cy) / ch.ry);
+        if (d >= 1) continue;
+        const a = (0.8 * (1 - d * d * 0.5) * (1 - d ** 4)) * soft[y * BW + x];
+        if (a > 0) over((y * BW + x) * 4, [255, 143, 168], a);
       }
     }
   }
 
   const ink = "#2b1730";
   const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${BW}" height="${BH}">
-    <defs><radialGradient id="ck"><stop offset="0" stop-color="#ff8fa8" stop-opacity=".8"/><stop offset=".7" stop-color="#ff8fa8" stop-opacity=".45"/><stop offset="1" stop-color="#ff8fa8" stop-opacity="0"/></radialGradient></defs>
-    <ellipse cx="61" cy="102" rx="21" ry="17" fill="url(#ck)" transform="rotate(22 61 102)"/>
-    <ellipse cx="146" cy="139" rx="23" ry="18" fill="url(#ck)" transform="rotate(22 146 139)"/>
     <g transform="translate(108.5 106) rotate(22.2)" stroke-linecap="round" stroke-linejoin="round">
       <ellipse cx="-30.9" cy="0" rx="7.4" ry="9" fill="${ink}"/>
       <circle cx="-32.8" cy="-3.2" r="2.6" fill="#fff"/><circle cx="-28.6" cy="3.4" r="1.2" fill="#fff" opacity=".8"/>

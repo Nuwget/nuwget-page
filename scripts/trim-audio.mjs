@@ -18,11 +18,12 @@ const CLIPS = [
     fadeOut: 0.06,
   },
   {
-    // "atatat atatat atatata": three bursts of staccato syllables, silence on both sides
+    // "atatat atatat atatata": staccato syllables every ~0.24 s right at the start of the
+    // 28 s clip, with silence before (0 to 0.08 s) and after (3.92 s on)
     src: "media/ssstik.io_1791110423263.mp3",
     out: "public/audio/atatat.mp3",
-    start: 23.38,
-    end: 25.88,
+    start: 0.04,
+    end: 3.94,
     fadeOut: 0.03,
   },
 ];
