@@ -16,7 +16,7 @@ Cada idioma tem sua rota: português em `/` e inglês em `/en/` (e `/v1/en/` na 
 ## Detalhes
 
 - **Portão de idioma**: toda visita abre uma tela de escolha (Português / English) com um fundo em shader WebGL (ruído fractal com distorção de domínio, reage ao ponteiro), palavras gigantes com hover magnético e uma transição em círculo que se abre do ponto clicado. Escolher o outro idioma navega com um véu roxo que se dissolve na página nova. Sem JavaScript ou com movimento reduzido, o portão some ou vira um fade simples.
-- **Easter egg da Bubu**: tocar na cabeça dela (no hero ou no recorte do Sobre) acorda a Bubu. Ela fica brava, depois o Dudu também, e na terceira vez rola a autodestruição rumo ao Google. Dá para pedir desculpas durante a contagem. O estado vale só para a sessão do navegador.
+- **Easter egg da Bubu**: tocar na cabeça dela (no hero ou no recorte do Sobre) acorda a Bubu, com "oooo family" seguido de "atatat atatat atatata" em loop enquanto o modal está aberto. Ela fica brava, depois o Dudu também, e no terceiro toque rola a autodestruição rumo ao Google. Pedir desculpas durante a contagem cancela, a Bubu perdoa uma vez, e o toque seguinte é "AGORA VC PEDIU!" sem volta. O estado vale só para a sessão do navegador. Os trechos de áudio saem dos clipes originais com `scripts/trim-audio.mjs`.
 - **Desempenho**: hero em sprites WebP com alpha (`scripts/bake-sprites.mjs`), animações só em `transform`/`opacity`, tudo pausa fora da tela.
 
 ## Stack
