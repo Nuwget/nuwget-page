@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# source audio (full clip); only the trimmed public/audio/family.mp3 is published
+/media/
