@@ -112,14 +112,11 @@ export function Hero({ c }: { c: Content }) {
   }, [reduce]);
 
   const g = SCENE.glows;
-  const fade = (delay: number) =>
-    reduce
-      ? {}
-      : {
-          initial: { opacity: 0, y: 28 },
-          animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 },
-          transition: { duration: 1, delay, ease: [0.22, 1, 0.36, 1] as const },
-        };
+  const fade = (delay: number) => ({
+    initial: { opacity: 0, y: 28 },
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 },
+    transition: reduce ? { duration: 0 } : { duration: 1, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
 
   return (
     <section
