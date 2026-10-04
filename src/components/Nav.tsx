@@ -49,7 +49,7 @@ export function Nav({ c }: { c: Content }) {
       <nav
         aria-label={c.lang === "pt" ? "Principal" : "Main"}
         className={`mx-auto mt-3 flex max-w-[1320px] items-center justify-between gap-4 rounded-full px-3 py-2 transition-all duration-500 sm:mt-4 sm:px-4 ${
-          scrolled || open ? "glass !bg-[rgb(9_7_32/0.82)]" : "border border-transparent"
+          scrolled || open ? "glass glass-blur !bg-[rgb(9_7_32/0.82)]" : "border border-transparent"
         } mx-3 sm:mx-auto`}
       >
         <a href="#inicio" className="flex items-center gap-2.5 pr-2" aria-label={c.hero.name}>
@@ -100,7 +100,7 @@ export function Nav({ c }: { c: Content }) {
       </nav>
 
       {open && (
-        <ul id="menu-mobile" className="glass !bg-[rgb(9_7_32/0.92)] mx-3 mt-2 flex flex-col rounded-3xl p-2 md:hidden">
+        <ul id="menu-mobile" className="glass glass-blur !bg-[rgb(9_7_32/0.92)] mx-3 mt-2 flex flex-col rounded-3xl p-2 md:hidden">
           {c.ui.nav.map((n) => (
             <li key={n.id}>
               <a
